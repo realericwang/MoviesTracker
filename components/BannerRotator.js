@@ -94,12 +94,12 @@ export default function BannerRotator({ movies }) {
 
 const styles = StyleSheet.create({
   bannerContainer: {
-    height: 300,
+    height: 200,
     position: 'relative',
     marginBottom: spacing.lg,
   },
   bannerSlide: {
-    height: 300,
+    height: 200,
     borderRadius: 16,
     overflow: 'hidden',
   },
@@ -114,6 +114,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: spacing.lg,
+    paddingBottom: spacing.xl,
     background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%)',
   },
   bannerTitle: {
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
   pagination: {
     flexDirection: 'row',
     position: 'absolute',
-    bottom: spacing.xl,
+    bottom: spacing.sm,
     alignSelf: 'center',
   },
   dot: {
