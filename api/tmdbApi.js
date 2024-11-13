@@ -14,6 +14,32 @@ export const fetchPopularMovies = async () => {
   }
 };
 
+export const fetchUpcomingMovies = async () => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`
+    );
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error('Error fetching upcoming movies:', error);
+    return [];
+  }
+};
+
+export const fetchTopRatedMovies = async () => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=en-US&page=1`
+    );
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error('Error fetching top rated movies:', error);
+    return [];
+  }
+};
+
 export const getImageUrl = (path) => {
   return `https://image.tmdb.org/t/p/w500${path}`;
 };
