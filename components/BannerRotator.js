@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Image, Animated, Dimensions, StyleSheet } from 'react-native';
 import { colors, spacing } from '../styles/globalStyles';
 import { getImageUrl } from '../api/tmdbApi';
@@ -7,25 +7,36 @@ export default function BannerRotator({ movies }) {
   const scrollX = new Animated.Value(0);
   const { width } = Dimensions.get('window');
   const scrollViewRef = useRef(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     let scrollInterval;
     if (movies.length > 0) {
-      let currentIndex = 0;
       scrollInterval = setInterval(() => {
-        if (currentIndex < movies.length - 1) {
-          currentIndex += 1;
-        } else {
-          currentIndex = 0;
-        }
+        const nextIndex = (currentIndex + 1) % movies.length;
+        setCurrentIndex(nextIndex);
         scrollViewRef.current?.scrollTo({
-          x: currentIndex * width,
+          x: nextIndex * width,
           animated: true,
         });
       }, 5000);
     }
     return () => clearInterval(scrollInterval);
-  }, [movies]);
+  }, [currentIndex, movies]);
+
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    { 
+      useNativeDriver: false,
+      listener: (event) => {
+        const offset = event.nativeEvent.contentOffset.x;
+        const newIndex = Math.round(offset / width);
+        if (newIndex !== currentIndex) {
+          setCurrentIndex(newIndex);
+        }
+      }
+    }
+  );
 
   return (
     <View style={styles.bannerContainer}>
@@ -34,14 +45,15 @@ export default function BannerRotator({ movies }) {
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
-        )}
+        onScroll={handleScroll}
         scrollEventThrottle={16}
+        decelerationRate="fast"
+        snapToInterval={width}
+        snapToAlignment="center"
+        contentContainerStyle={{ flexGrow: 0 }}
       >
         {movies.map((movie, index) => (
-          <View key={movie.id} style={[styles.bannerSlide, { width }]}>
+          <View key={movie.id} style={[styles.bannerSlide, { width: width }]}>
             <Image
               source={{ uri: getImageUrl(movie.backdrop_path) }}
               style={styles.bannerImage}
@@ -84,9 +96,12 @@ const styles = StyleSheet.create({
   bannerContainer: {
     height: 300,
     position: 'relative',
+    marginBottom: spacing.lg,
   },
   bannerSlide: {
     height: 300,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   bannerImage: {
     width: '100%',
@@ -98,34 +113,45 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    padding: spacing.md,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: spacing.lg,
+    background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 100%)',
   },
   bannerTitle: {
     color: '#FFF',
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     marginBottom: spacing.xs,
+    textShadow: '0px 2px 4px rgba(0,0,0,0.2)',
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
   },
   rating: {
     color: '#FFF',
-    fontSize: 16,
-    marginRight: spacing.sm,
+    fontSize: 14,
+    fontWeight: '600',
   },
   pagination: {
     flexDirection: 'row',
     position: 'absolute',
-    bottom: spacing.lg,
+    bottom: spacing.xl,
     alignSelf: 'center',
   },
   dot: {
-    height: 8,
-    borderRadius: 4,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: '#FFF',
     marginHorizontal: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });

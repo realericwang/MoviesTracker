@@ -1,23 +1,8 @@
-import { View, Text } from 'react-native';
-import globalStyles from '../styles/globalStyles';
-
-export default function HomeScreen() {
-  return (
-    <View style={globalStyles.centerContainer}>
-      <Text style={globalStyles.title}>Home Screen</Text>
-    </View>
-  );
-}
-import { View, Text, TextInput, ScrollView, Dimensions, StyleSheet } from 'react-native';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { View, Text, TextInput, Dimensions, StyleSheet } from 'react-native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { colors, spacing } from '../styles/globalStyles';
-
-const MoviesTab = () => (
-  <View style={styles.tabContent}>
-    <Text>Movies Content</Text>
-  </View>
-);
+import Movies from '../components/Movies';
 
 const TVShowsTab = () => (
   <View style={styles.tabContent}>
@@ -34,7 +19,7 @@ export default function HomeScreen() {
   ]);
 
   const renderScene = SceneMap({
-    movies: MoviesTab,
+    movies: Movies,
     tvshows: TVShowsTab,
   });
 
@@ -51,7 +36,6 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Search Box */}
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -61,7 +45,6 @@ export default function HomeScreen() {
         />
       </View>
 
-      {/* Tabs */}
       <TabView
         navigationState={{ index, routes }}
         renderScene={renderScene}
@@ -77,25 +60,33 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
   },
   searchContainer: {
     padding: spacing.md,
+    paddingBottom: spacing.lg,
   },
   searchInput: {
-    height: 40,
+    height: 48,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: spacing.md,
-    backgroundColor: '#F5F5F5',
+    borderRadius: 24,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.background,
+    fontSize: 16,
+    shadowColor: colors.dark,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3.84,
+    elevation: 2,
   },
   tabView: {
     flex: 1,
   },
   tabContent: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
