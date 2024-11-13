@@ -63,14 +63,14 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   searchContainer: {
-    padding: spacing.md,
-    paddingBottom: spacing.lg,
+    padding: spacing.sm,
+    paddingBottom: spacing.sm,
   },
   searchInput: {
-    height: 48,
+    height: 40,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 24,
+    borderRadius: 20,
     paddingHorizontal: spacing.lg,
     backgroundColor: colors.background,
     fontSize: 16,
