@@ -2,14 +2,16 @@ import { StyleSheet } from 'react-native';
 
 // Define colors
 export const colors = {
-  primary: '#007AFF',
-  secondary: '#5856D6',
+  primary: '#6366F1',
+  secondary: '#EC4899',
   background: '#FFFFFF',
-  text: '#000000',
-  textSecondary: '#8E8E93',
-  border: '#C7C7CC',
-  error: '#FF3B30',
-  success: '#34C759',
+  surface: '#F8FAFC',
+  text: '#1E293B',
+  textSecondary: '#64748B',
+  border: '#E2E8F0',
+  error: '#EF4444',
+  success: '#10B981',
+  dark: '#0F172A',
 };
 
 // Define common spacing
