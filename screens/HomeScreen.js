@@ -11,10 +11,6 @@ import debounce from 'lodash/debounce';
 
 const SEARCH_DELAY = 500; // 500ms delay
 
-const MoviesTab = ({ navigation }) => (
-  <Movies navigation={navigation} />
-);
-
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
