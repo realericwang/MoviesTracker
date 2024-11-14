@@ -158,6 +158,9 @@ export default function MovieDetailScreen({ route }) {
               userId: user.uid,
               movieTitle: movie.title,
               posterPath: movie.poster_path,
+              releaseDate: movie.release_date,
+              genres: movie.genres?.map(g => g.name).join(', '),
+              director: movie.credits?.crew?.find(person => person.job === "Director")?.name || "Unknown",
               timestamp: Date.now(),
             };
             await writeToDB(data, "bookmarks");

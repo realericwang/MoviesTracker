@@ -114,7 +114,6 @@ const styles = StyleSheet.create({
   },
   bannerSlide: {
     height: 200,
-    borderRadius: 16,
     overflow: "hidden",
   },
   bannerImage: {
@@ -134,7 +133,7 @@ const styles = StyleSheet.create({
   },
   bannerTitle: {
     color: "#FFF",
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "700",
     marginBottom: spacing.xs,
     textShadow: "0px 2px 4px rgba(0,0,0,0.2)",

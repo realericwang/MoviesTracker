@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   TextInput,
@@ -26,10 +26,10 @@ export default function HomeScreen() {
   });
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [index, setIndex] = useState(0);
-  const [routes] = useState([
+  const routes = [
     { key: "movies", title: "Movies" },
     { key: "tvshows", title: "TV Shows" },
-  ]);
+  ];
 
   const performSearch = useCallback(
     debounce(async (query) => {
@@ -43,37 +43,53 @@ export default function HomeScreen() {
     []
   );
 
-  const handleSearchChange = (text) => {
-    setSearchQuery(text);
-    performSearch(text);
-  };
+  const handleSearchChange = useCallback(
+    (text) => {
+      setSearchQuery(text);
+      performSearch(text);
+    },
+    [performSearch]
+  );
 
-  const handleMoviePress = (movie) => {
-    Keyboard.dismiss();
-    setIsSearchFocused(false);
-    navigation.navigate("MovieDetail", { movieId: movie.id });
-  };
+  const handleMoviePress = useCallback(
+    (movie) => {
+      Keyboard.dismiss();
+      setIsSearchFocused(false);
+      navigation.navigate("MovieDetail", { movieId: movie.id });
+    },
+    [navigation]
+  );
 
-  const handleTVShowPress = (show) => {
-    Keyboard.dismiss();
-    setIsSearchFocused(false);
-    navigation.navigate("TVShowDetail", { showId: show.id });
-  };
+  const handleTVShowPress = useCallback(
+    (show) => {
+      Keyboard.dismiss();
+      setIsSearchFocused(false);
+      navigation.navigate("TVShowDetail", { showId: show.id });
+    },
+    [navigation]
+  );
 
-  const renderScene = SceneMap({
-    movies: Movies,
-    tvshows: TVShows,
-  });
+  const renderScene = useMemo(
+    () =>
+      SceneMap({
+        movies: Movies,
+        tvshows: TVShows,
+      }),
+    []
+  );
 
-  const renderTabBar = (props) => (
-    <TabBar
-      {...props}
-      indicatorStyle={{ backgroundColor: colors.primary }}
-      style={{ backgroundColor: colors.background }}
-      labelStyle={{ color: colors.text }}
-      activeColor={colors.primary}
-      inactiveColor={colors.textSecondary}
-    />
+  const renderTabBar = useCallback(
+    (props) => (
+      <TabBar
+        {...props}
+        indicatorStyle={{ backgroundColor: colors.primary }}
+        style={{ backgroundColor: colors.background }}
+        labelStyle={{ color: colors.text }}
+        activeColor={colors.primary}
+        inactiveColor={colors.textSecondary}
+      />
+    ),
+    []
   );
 
   return (
@@ -119,26 +135,38 @@ const styles = StyleSheet.create({
   searchContainer: {
     padding: spacing.sm,
     paddingBottom: spacing.sm,
-  },
-  searchInput: {
-    height: 40,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 20,
-    paddingHorizontal: spacing.lg,
     backgroundColor: colors.background,
-    fontSize: 16,
     shadowColor: colors.dark,
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 3.84,
-    elevation: 2,
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1,
+  },
+  searchInput: {
+    height: 45,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 25,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.background,
+    fontSize: 16,
+    color: colors.text,
+    shadowColor: colors.dark,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4.5,
+    elevation: 4,
   },
   tabView: {
     flex: 1,
+    marginTop: spacing.xs,
   },
   tabContent: {
     flex: 1,
@@ -146,5 +174,15 @@ const styles = StyleSheet.create({
   searchResults: {
     flex: 1,
     backgroundColor: colors.background,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    shadowColor: colors.dark,
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 3,
   },
 });
