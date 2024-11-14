@@ -13,6 +13,7 @@
     "@react-navigation/native": "^7.0.0",
     "expo": "~51.0.28",
     "expo-status-bar": "~1.12.1",
+    "firebase": "^11.0.1",
     "react": "18.2.0",
     "react-native": "0.74.5",
     "react-native-pager-view": "6.3.0",
