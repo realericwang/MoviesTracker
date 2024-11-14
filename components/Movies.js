@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { fetchPopularMovies, fetchUpcomingMovies, fetchTopRatedMovies } from '../api/tmdbApi';
-import BannerRotator from './BannerRotator';
-import MovieCategory from './MovieCategory';
-import MovieCard from './MovieCard';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet } from "react-native";
+import {
+  fetchPopularMovies,
+  fetchUpcomingMovies,
+  fetchTopRatedMovies,
+} from "../api/tmdbApi";
+import BannerRotator from "./BannerRotator";
+import MovieCategory from "./MovieCategory";
+import MovieCard from "./MovieCard";
+import { useNavigation } from "@react-navigation/native";
 
 export default function Movies() {
   const navigation = useNavigation();
@@ -27,15 +31,15 @@ export default function Movies() {
   }, []);
 
   const handleMoviePress = (movie) => {
-    navigation.navigate('MovieDetail', { movieId: movie.id });
+    navigation.navigate("MovieDetail", { movieId: movie.id });
   };
 
   return (
     <ScrollView style={styles.container}>
       <BannerRotator movies={popularMovies} />
-      
+
       <MovieCategory title="Popular Movies">
-        {popularMovies.map(movie => (
+        {popularMovies.map((movie) => (
           <MovieCard
             key={movie.id}
             movie={movie}
@@ -45,7 +49,7 @@ export default function Movies() {
       </MovieCategory>
 
       <MovieCategory title="Coming Soon">
-        {upcomingMovies.map(movie => (
+        {upcomingMovies.map((movie) => (
           <MovieCard
             key={movie.id}
             movie={movie}
@@ -55,7 +59,7 @@ export default function Movies() {
       </MovieCategory>
 
       <MovieCategory title="Top Rated">
-        {topRatedMovies.map(movie => (
+        {topRatedMovies.map((movie) => (
           <MovieCard
             key={movie.id}
             movie={movie}

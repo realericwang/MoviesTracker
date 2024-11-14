@@ -1,25 +1,34 @@
-import React, { useState, useCallback } from 'react';
-import { View, TextInput, Dimensions, StyleSheet, Keyboard } from 'react-native';
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
-import { colors, spacing } from '../styles/globalStyles';
-import { searchMoviesAndTVShows } from '../api/tmdbApi';
-import Movies from '../components/Movies';
-import TVShows from '../components/TVShows';
-import SearchResults from '../components/SearchResults';
-import { useNavigation } from '@react-navigation/native';
-import debounce from 'lodash/debounce';
+import React, { useState, useCallback } from "react";
+import {
+  View,
+  TextInput,
+  Dimensions,
+  StyleSheet,
+  Keyboard,
+} from "react-native";
+import { TabView, SceneMap, TabBar } from "react-native-tab-view";
+import { colors, spacing } from "../styles/globalStyles";
+import { searchMoviesAndTVShows } from "../api/tmdbApi";
+import Movies from "../components/Movies";
+import TVShows from "../components/TVShows";
+import SearchResults from "../components/SearchResults";
+import { useNavigation } from "@react-navigation/native";
+import debounce from "lodash/debounce";
 
 const SEARCH_DELAY = 500; // 500ms delay
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState({ movies: [], tvShows: [] });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState({
+    movies: [],
+    tvShows: [],
+  });
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-    { key: 'movies', title: 'Movies' },
-    { key: 'tvshows', title: 'TV Shows' },
+    { key: "movies", title: "Movies" },
+    { key: "tvshows", title: "TV Shows" },
   ]);
 
   const performSearch = useCallback(
@@ -42,13 +51,13 @@ export default function HomeScreen() {
   const handleMoviePress = (movie) => {
     Keyboard.dismiss();
     setIsSearchFocused(false);
-    navigation.navigate('MovieDetail', { movieId: movie.id });
+    navigation.navigate("MovieDetail", { movieId: movie.id });
   };
 
   const handleTVShowPress = (show) => {
     Keyboard.dismiss();
     setIsSearchFocused(false);
-    navigation.navigate('TVShowDetail', { showId: show.id });
+    navigation.navigate("TVShowDetail", { showId: show.id });
   };
 
   const renderScene = SceneMap({
@@ -56,7 +65,7 @@ export default function HomeScreen() {
     tvshows: TVShows,
   });
 
-  const renderTabBar = props => (
+  const renderTabBar = (props) => (
     <TabBar
       {...props}
       indicatorStyle={{ backgroundColor: colors.primary }}
@@ -93,7 +102,7 @@ export default function HomeScreen() {
           navigationState={{ index, routes }}
           renderScene={renderScene}
           onIndexChange={setIndex}
-          initialLayout={{ width: Dimensions.get('window').width }}
+          initialLayout={{ width: Dimensions.get("window").width }}
           renderTabBar={renderTabBar}
           style={styles.tabView}
         />

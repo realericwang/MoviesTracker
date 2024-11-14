@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../styles/globalStyles';
-import { auth } from '../firebase/firebaseSetup';
-import { onAuthStateChanged } from 'firebase/auth';
-import { AuthStack } from './AuthStack';
+import React, { useState, useEffect } from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
+import { colors } from "../styles/globalStyles";
+import { auth } from "../firebase/firebaseSetup";
+import { onAuthStateChanged } from "firebase/auth";
+import { AuthStack } from "./AuthStack";
 
 // Import screens
-import HomeScreen from '../screens/HomeScreen';
-import BookmarksScreen from '../screens/BookmarksScreen';
-import FootprintScreen from '../screens/FootprintScreen';
-import AccountScreen from '../screens/AccountScreen';
-import MovieDetailScreen from '../screens/MovieDetailScreen';
-import TVShowDetailScreen from '../screens/TVShowDetailScreen';
+import HomeScreen from "../screens/HomeScreen";
+import BookmarksScreen from "../screens/BookmarksScreen";
+import FootprintScreen from "../screens/FootprintScreen";
+import AccountScreen from "../screens/AccountScreen";
+import MovieDetailScreen from "../screens/MovieDetailScreen";
+import TVShowDetailScreen from "../screens/TVShowDetailScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -25,14 +25,14 @@ function TabNavigator() {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Bookmarks') {
-            iconName = focused ? 'bookmark' : 'bookmark-outline';
-          } else if (route.name === 'Footprint') {
-            iconName = focused ? 'footsteps' : 'footsteps-outline';
-          } else if (route.name === 'Account') {
-            iconName = focused ? 'person' : 'person-outline';
+          if (route.name === "Home") {
+            iconName = focused ? "home" : "home-outline";
+          } else if (route.name === "Bookmarks") {
+            iconName = focused ? "bookmark" : "bookmark-outline";
+          } else if (route.name === "Footprint") {
+            iconName = focused ? "footsteps" : "footsteps-outline";
+          } else if (route.name === "Account") {
+            iconName = focused ? "person" : "person-outline";
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;

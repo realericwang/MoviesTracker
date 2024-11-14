@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { colors, spacing } from '../styles/globalStyles';
+import React from "react";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { colors, spacing } from "../styles/globalStyles";
 
 export default function MovieCategory({ title, children }) {
   return (
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
     color: colors.text,
     marginBottom: spacing.sm,
     paddingHorizontal: spacing.md,

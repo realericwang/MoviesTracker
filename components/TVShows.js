@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { fetchPopularTVShows, fetchTopRatedTVShows, fetchOnTheAirTVShows } from '../api/tmdbApi';
-import BannerRotator from './BannerRotator';
-import MovieCategory from './MovieCategory';
-import MovieCard from './MovieCard';
-import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from "react";
+import { ScrollView, StyleSheet } from "react-native";
+import {
+  fetchPopularTVShows,
+  fetchTopRatedTVShows,
+  fetchOnTheAirTVShows,
+} from "../api/tmdbApi";
+import BannerRotator from "./BannerRotator";
+import MovieCategory from "./MovieCategory";
+import MovieCard from "./MovieCard";
+import { useNavigation } from "@react-navigation/native";
 
 export default function TVShows() {
   const navigation = useNavigation();
@@ -27,15 +31,15 @@ export default function TVShows() {
   }, []);
 
   const handleShowPress = (show) => {
-    navigation.navigate('TVShowDetail', { showId: show.id });
+    navigation.navigate("TVShowDetail", { showId: show.id });
   };
 
   return (
     <ScrollView style={styles.container}>
       <BannerRotator movies={popularShows} />
-      
+
       <MovieCategory title="Popular TV Shows">
-        {popularShows.map(show => (
+        {popularShows.map((show) => (
           <MovieCard
             key={show.id}
             movie={show}
@@ -45,7 +49,7 @@ export default function TVShows() {
       </MovieCategory>
 
       <MovieCategory title="On The Air">
-        {onTheAirShows.map(show => (
+        {onTheAirShows.map((show) => (
           <MovieCard
             key={show.id}
             movie={show}
@@ -55,7 +59,7 @@ export default function TVShows() {
       </MovieCategory>
 
       <MovieCategory title="Top Rated">
-        {topRatedShows.map(show => (
+        {topRatedShows.map((show) => (
           <MovieCard
             key={show.id}
             movie={show}
