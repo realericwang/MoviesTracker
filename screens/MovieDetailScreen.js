@@ -365,7 +365,7 @@ export default function MovieDetailScreen({ route }) {
             </View>
           </View>
         </View>
-        <View style={styles.section}>
+        <View style={styles.reviewsSection}>
           <Text style={styles.sectionTitle}>Reviews</Text>
           {reviews.length === 0 ? (
             <Text style={styles.noReviewsText}>No reviews yet.</Text>
@@ -525,7 +525,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   details: {
-    padding: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
   title: {
     fontSize: 26,
@@ -589,6 +590,7 @@ const styles = StyleSheet.create({
   overviewText: {
     color: colors.textSecondary,
     lineHeight: 24,
+    marginTop: spacing.xs,
   },
   sectionTitle: {
     fontSize: 18,
@@ -602,6 +604,7 @@ const styles = StyleSheet.create({
   castMember: {
     width: 100,
     marginRight: spacing.md,
+    marginTop: spacing.xs,
   },
   castImage: {
     width: 80,
@@ -652,7 +655,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: spacing.lg,
-    paddingHorizontal: spacing.lg,
   },
 
   floatingButton: {
@@ -763,5 +765,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  reviewsSection: {
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
 });
