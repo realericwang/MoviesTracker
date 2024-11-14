@@ -120,35 +120,58 @@ export default function MovieDetailScreen({ route }) {
 
     try {
       if (isBookmarked) {
-        await deleteFromDB(bookmarksID, "bookmarks");
+        // Optimistically update UI
         setIsBookmarked(false);
+        const bookmarkIdToDelete = bookmarksID;
         setBookmarksID(null);
-      } else {
-        // Check if the bookmark already exists
-        const existingBookmark = await getDocsByQueries(
-          "bookmarks",
-          [where("movieId", "==", movieId), where("userId", "==", user.uid)],
-          true
-        );
 
-        if (!existingBookmark) {
-          const data = {
-            movieId,
-            userId: user.uid,
-            movieTitle: movie.title,
-            posterPath: movie.poster_path,
-            timestamp: Date.now(),
-          };
-          await writeToDB(data, "bookmarks");
+        // Handle backend in background
+        try {
+          await deleteFromDB(bookmarkIdToDelete, "bookmarks");
+        } catch (error) {
+          // Revert UI if backend fails
+          console.error("Error deleting bookmark:", error);
           setIsBookmarked(true);
+          setBookmarksID(bookmarkIdToDelete);
+        }
+      } else {
+        // Optimistically update UI
+        setIsBookmarked(true);
 
-          // Get the new bookmark ID
-          const bookmarkData = await getDocsByQueries(
+        // Handle backend in background
+        try {
+          const existingBookmark = await getDocsByQueries(
             "bookmarks",
             [where("movieId", "==", movieId), where("userId", "==", user.uid)],
             true
           );
-          setBookmarksID(bookmarkData.id);
+
+          if (!existingBookmark) {
+            const data = {
+              movieId,
+              userId: user.uid,
+              movieTitle: movie.title,
+              posterPath: movie.poster_path,
+              timestamp: Date.now(),
+            };
+            await writeToDB(data, "bookmarks");
+
+            // Get the new bookmark ID
+            const bookmarkData = await getDocsByQueries(
+              "bookmarks",
+              [
+                where("movieId", "==", movieId),
+                where("userId", "==", user.uid),
+              ],
+              true
+            );
+            setBookmarksID(bookmarkData.id);
+          }
+        } catch (error) {
+          // Revert UI if backend fails
+          console.error("Error adding bookmark:", error);
+          setIsBookmarked(false);
+          setBookmarksID(null);
         }
       }
     } catch (error) {
