@@ -27,7 +27,7 @@ export default function BookmarksScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredMovies, setFilteredMovies] = useState([]);
-  const [sortBy, setSortBy] = useState('timestamp');
+  const [sortBy, setSortBy] = useState("timestamp");
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const navigation = useNavigation();
   const user = auth.currentUser;
@@ -71,7 +71,7 @@ export default function BookmarksScreen() {
 
     // Sort the filtered movies
     const sorted = [...filtered].sort((a, b) => {
-      if (sortBy === 'year') {
+      if (sortBy === "year") {
         const yearA = new Date(a.releaseDate).getFullYear();
         const yearB = new Date(b.releaseDate).getFullYear();
         return yearB - yearA; // Sort by year descending
@@ -190,97 +190,119 @@ export default function BookmarksScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search bookmarks..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholderTextColor={colors.textSecondary}
-        />
-        <View style={styles.sortContainer}>
-          <TouchableOpacity
-            style={[styles.dropdownButton, isDropdownVisible && styles.dropdownButtonActive]}
-            onPress={() => setIsDropdownVisible(true)}
-          >
-            <Text style={styles.dropdownButtonText}>
-              Sort by: {sortBy === 'timestamp' ? 'Date Added' : 'Release Year'}
-            </Text>
-            <Ionicons name="chevron-down" size={16} color={colors.text} />
-          </TouchableOpacity>
+      <View style={styles.header}>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search bookmarks..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholderTextColor={colors.textSecondary}
+          />
+        </View>
+        <TouchableOpacity
+          style={[
+            styles.dropdownButton,
+            isDropdownVisible && styles.dropdownButtonActive,
+          ]}
+          onPress={() => setIsDropdownVisible(true)}
+        >
+          <Ionicons
+            name="funnel-outline"
+            size={18}
+            color={sortBy === "year" ? colors.primary : colors.text}
+          />
+        </TouchableOpacity>
+      </View>
 
-          <Modal
-            visible={isDropdownVisible}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={() => setIsDropdownVisible(false)}
-          >
-            <TouchableWithoutFeedback onPress={() => setIsDropdownVisible(false)}>
-              <View style={styles.modalOverlay}>
-                <TouchableWithoutFeedback>
-                  <View style={styles.dropdownMenu}>
-                    <TouchableOpacity
+      <Modal
+        visible={isDropdownVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsDropdownVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setIsDropdownVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback>
+              <View
+                style={[styles.dropdownMenu, { right: spacing.md, top: 100 }]}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.dropdownItem,
+                    sortBy === "timestamp" && styles.dropdownItemSelected,
+                  ]}
+                  onPress={() => {
+                    setSortBy("timestamp");
+                    setIsDropdownVisible(false);
+                  }}
+                >
+                  <View style={styles.dropdownItemContent}>
+                    <Ionicons
+                      name="time-outline"
+                      size={20}
+                      color={
+                        sortBy === "timestamp" ? colors.primary : colors.text
+                      }
+                    />
+                    <Text
                       style={[
-                        styles.dropdownItem,
-                        sortBy === 'timestamp' && styles.dropdownItemSelected
+                        styles.dropdownItemText,
+                        sortBy === "timestamp" &&
+                          styles.dropdownItemTextSelected,
                       ]}
-                      onPress={() => {
-                        setSortBy('timestamp');
-                        setIsDropdownVisible(false);
-                      }}
                     >
-                      <View style={styles.dropdownItemContent}>
-                        <Ionicons 
-                          name="time-outline" 
-                          size={20} 
-                          color={sortBy === 'timestamp' ? colors.primary : colors.text} 
-                        />
-                        <Text style={[
-                          styles.dropdownItemText,
-                          sortBy === 'timestamp' && styles.dropdownItemTextSelected
-                        ]}>
-                          Date Added
-                        </Text>
-                      </View>
-                      {sortBy === 'timestamp' && (
-                        <Ionicons name="checkmark" size={20} color={colors.primary} />
-                      )}
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity
-                      style={[
-                        styles.dropdownItem,
-                        sortBy === 'year' && styles.dropdownItemSelected
-                      ]}
-                      onPress={() => {
-                        setSortBy('year');
-                        setIsDropdownVisible(false);
-                      }}
-                    >
-                      <View style={styles.dropdownItemContent}>
-                        <Ionicons 
-                          name="calendar-outline" 
-                          size={20} 
-                          color={sortBy === 'year' ? colors.primary : colors.text} 
-                        />
-                        <Text style={[
-                          styles.dropdownItemText,
-                          sortBy === 'year' && styles.dropdownItemTextSelected
-                        ]}>
-                          Release Year
-                        </Text>
-                      </View>
-                      {sortBy === 'year' && (
-                        <Ionicons name="checkmark" size={20} color={colors.primary} />
-                      )}
-                    </TouchableOpacity>
+                      Date Added
+                    </Text>
                   </View>
-                </TouchableWithoutFeedback>
+                  {sortBy === "timestamp" && (
+                    <Ionicons
+                      name="checkmark"
+                      size={20}
+                      color={colors.primary}
+                    />
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.dropdownItem,
+                    sortBy === "year" && styles.dropdownItemSelected,
+                  ]}
+                  onPress={() => {
+                    setSortBy("year");
+                    setIsDropdownVisible(false);
+                  }}
+                >
+                  <View style={styles.dropdownItemContent}>
+                    <Ionicons
+                      name="calendar-outline"
+                      size={20}
+                      color={sortBy === "year" ? colors.primary : colors.text}
+                    />
+                    <Text
+                      style={[
+                        styles.dropdownItemText,
+                        sortBy === "year" && styles.dropdownItemTextSelected,
+                      ]}
+                    >
+                      Release Year
+                    </Text>
+                  </View>
+                  {sortBy === "year" && (
+                    <Ionicons
+                      name="checkmark"
+                      size={20}
+                      color={colors.primary}
+                    />
+                  )}
+                </TouchableOpacity>
               </View>
             </TouchableWithoutFeedback>
-          </Modal>
-        </View>
-      </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
       <FlatList
         data={filteredMovies}
         keyExtractor={(item) => item.id}
@@ -429,12 +451,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     opacity: 0.8,
   },
-  searchContainer: {
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
     padding: spacing.sm,
-    paddingBottom: spacing.sm,
-    backgroundColor: colors.background,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+    backgroundColor: colors.background,
+  },
+  searchContainer: {
+    flex: 1,
+    marginRight: spacing.sm,
   },
   searchInput: {
     height: 40,
@@ -445,20 +472,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  sortContainer: {
-    marginTop: spacing.xs,
-  },
   dropdownButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    width: 40,
+    height: 40,
     borderRadius: 20,
+    backgroundColor: colors.surface,
+    justifyContent: "center",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: colors.border,
-    justifyContent: 'space-between',
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -471,25 +494,18 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
     backgroundColor: `${colors.primary}10`,
   },
-  dropdownButtonText: {
-    color: colors.text,
-    fontSize: 14,
-    marginRight: spacing.xs,
-    fontWeight: '500',
-  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-start',
-    paddingTop: 150,
-    paddingHorizontal: spacing.lg,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dropdownMenu: {
+    position: "absolute",
+    width: 200,
     backgroundColor: colors.surface,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 4,
@@ -500,16 +516,16 @@ const styles = StyleSheet.create({
     borderColor: `${colors.border}80`,
   },
   dropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: `${colors.border}40`,
   },
   dropdownItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.sm,
   },
   dropdownItemSelected: {
@@ -522,6 +538,6 @@ const styles = StyleSheet.create({
   },
   dropdownItemTextSelected: {
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
