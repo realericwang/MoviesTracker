@@ -20,7 +20,20 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { database } from "../firebase/firebaseSetup";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-
+/**
+ * EditProfileScreen Component
+ *
+ * This component allows authenticated users to edit their profile information,
+ * including display name, profile picture, birthdate, and gender. Users can
+ * upload a new profile image, select their birthdate using a date picker, and
+ * choose their gender from predefined options. Upon saving, the updated information
+ * is stored in Firebase Authentication and Firestore.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {Object} props.navigation - Navigation object for navigating between screens.
+ * @returns {React.Element} The rendered component.
+ */
 const EditProfileScreen = ({ navigation }) => {
   const user = auth.currentUser;
   const [displayName, setDisplayName] = useState(user?.displayName || "");

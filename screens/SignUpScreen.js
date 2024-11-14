@@ -10,7 +10,20 @@ import {
 } from "react-native";
 import { colors, spacing } from "../styles/globalStyles";
 import { signUp } from "../firebase/authHelper";
-
+/**
+ * SignUpScreen Component
+ *
+ * This component provides a user interface for new users to create an account.
+ * It includes input fields for email, password, and password confirmation.
+ * Upon successful sign-up, users are navigated to the "Account" screen.
+ * It handles validation for empty fields and password matching,
+ * and provides feedback through alerts and loading indicators.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {Object} props.navigation - Navigation object for navigating between screens.
+ * @returns {React.Element} The rendered SignUpScreen component.
+ */
 const SignUpScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
