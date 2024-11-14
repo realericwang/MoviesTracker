@@ -16,7 +16,11 @@ const {width} = Dimensions.get('window');
 export default function MovieDetailScreen({route}) {
     const {movieId} = route.params;
     const [movie, setMovie] = useState(null);
+
+    /* bookmark related */
     const [isBookmarked, setIsBookmarked] = useState(false);
+    const [bookmarksID, setBookmarksID] = useState(null);
+
     const navigation = useNavigation();
     const [reviews, setReviews] = useState([]);
     const [userReview, setUserReview] = useState(null);
@@ -86,18 +90,54 @@ export default function MovieDetailScreen({route}) {
             console.error('Error fetching movie details:', error);
         }
     };
-    const handleBookmarkPress = () => {
+    const handleBookmarkPress = async () => {
         if (!user) {
             navigation.navigate('Auth');
             return;
         }
-        setIsBookmarked(!isBookmarked);
-        // TODO: Implement actual bookmark functionality with Firebase
+        try {
+            if (isBookmarked) {
+                await deleteFromDB(bookmarksID, 'bookmarks');
+                setIsBookmarked(false);
+                setBookmarksID(null);
+            } else {
+                const data = {
+                    movieId,
+                    userId: user.uid,
+                    movieTitle: movie.title,
+                    posterPath: movie.poster_path,
+                    timestamp: Date.now(),
+                };
+                await writeToDB(data, 'bookmarks');
+                setIsBookmarked(true);
+                // 获取新添加的收藏的文档 ID
+                const bookmarkData = await getDocsByQuery('bookmarks', 'movieId', '==', movieId);
+                setBookmarksID(bookmarkData.id);
+            }
+        } catch (error) {
+            console.error('Error handling bookmark:', error);
+        }
+    };
+    const checkIfBookmarked = async () => {
+        if (!user) return;
+        try {
+            const bookmarkData = await getDocsByQuery('bookmarks', 'movieId', '==', movieId);
+            if (bookmarkData && bookmarkData.userId === user.uid) {
+                setIsBookmarked(true);
+                setBookmarksID(bookmarkData.id);
+            } else {
+                setIsBookmarked(false);
+                setBookmarksID(null);
+            }
+        } catch (error) {
+            console.error('Error checking bookmark status:', error);
+        }
     };
 
     useEffect(() => {
         fetchMovieDetails();
         fetchReviews();
+        checkIfBookmarked();
     }, [movieId]);
 
     useEffect(() => {
