@@ -14,6 +14,8 @@ import FootprintScreen from "../screens/FootprintScreen";
 import AccountScreen from "../screens/AccountScreen";
 import MovieDetailScreen from "../screens/MovieDetailScreen";
 import TVShowDetailScreen from "../screens/TVShowDetailScreen";
+import SettingsScreen from "../screens/SettingsScreen";
+import EditProfileScreen from "../screens/EditProfileScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -72,6 +74,18 @@ export function AppNavigator() {
       <Stack.Screen name="MovieDetail" component={MovieDetailScreen} />
       <Stack.Screen name="TVShowDetail" component={TVShowDetailScreen} />
       <Stack.Screen name="Auth" component={AuthStack} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          title: "Settings",
+          headerStyle: {
+            backgroundColor: colors.background,
+          },
+          headerTintColor: colors.text,
+        }}
+      />
     </Stack.Navigator>
   );
 }

@@ -44,18 +44,12 @@ const AccountScreen = () => {
       icon: "person-outline",
       title: "Edit Profile",
       onPress: () =>
-        user ? console.log("Edit Profile pressed") : handleLogin(),
-    },
-    {
-      icon: "notifications-outline",
-      title: "Notifications",
-      onPress: () =>
-        user ? console.log("Notifications pressed") : handleLogin(),
+        user ? navigation.navigate("EditProfile") : handleLogin(),
     },
     {
       icon: "settings-outline",
       title: "Settings",
-      onPress: () => console.log("Settings pressed"),
+      onPress: () => navigation.navigate("Settings"),
     },
     {
       icon: "help-circle-outline",
