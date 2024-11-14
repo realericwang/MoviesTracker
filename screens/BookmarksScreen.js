@@ -19,6 +19,7 @@ import { getImageUrl } from "../api/tmdbApi";
 import { colors, spacing } from "../styles/globalStyles";
 import { where } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
+import { onAuthStateChanged } from "firebase/auth";
 
 export default function BookmarksScreen() {
   const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
@@ -30,7 +31,7 @@ export default function BookmarksScreen() {
   const [sortBy, setSortBy] = useState("timestamp");
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const navigation = useNavigation();
-  const user = auth.currentUser;
+  const [user, setUser] = useState(auth.currentUser);
 
   const fetchBookmarkedMovies = async () => {
     if (!user) {
@@ -63,6 +64,15 @@ export default function BookmarksScreen() {
       fetchBookmarkedMovies();
     });
   }, [navigation]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      fetchBookmarkedMovies();
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const filtered = bookmarkedMovies.filter((movie) =>
