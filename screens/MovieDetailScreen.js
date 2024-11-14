@@ -11,6 +11,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '../styles/globalStyles';
 import { getImageUrl } from '../api/tmdbApi';
+import { useNavigation } from '@react-navigation/native';
+import { auth } from '../firebase/firebaseSetup';
 
 const { width } = Dimensions.get('window');
 
@@ -18,6 +20,8 @@ export default function MovieDetailScreen({ route }) {
   const { movieId } = route.params;
   const [movie, setMovie] = useState(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const navigation = useNavigation();
+  const user = auth.currentUser;
 
   useEffect(() => {
     fetchMovieDetails();
@@ -33,6 +37,15 @@ export default function MovieDetailScreen({ route }) {
     } catch (error) {
       console.error('Error fetching movie details:', error);
     }
+  };
+
+  const handleBookmarkPress = () => {
+    if (!user) {
+      navigation.navigate('Auth');
+      return;
+    }
+    setIsBookmarked(!isBookmarked);
+    // TODO: Implement actual bookmark functionality with Firebase
   };
 
   if (!movie) {
