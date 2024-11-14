@@ -8,6 +8,7 @@ import BookmarksScreen from '../screens/BookmarksScreen';
 import FootprintScreen from '../screens/FootprintScreen';
 import AccountScreen from '../screens/AccountScreen';
 import MovieDetailScreen from '../screens/MovieDetailScreen';
+
 import TVShowDetailScreen from '../screens/TVShowDetailScreen';
 
 const Tab = createBottomTabNavigator();
@@ -72,6 +73,7 @@ export function AppNavigator() {
           title: '',
         }}
       />
+
     </Stack.Navigator>
   );
 }
