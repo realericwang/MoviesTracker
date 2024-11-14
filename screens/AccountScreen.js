@@ -47,15 +47,9 @@ const AccountScreen = () => {
         user ? console.log("Edit Profile pressed") : handleLogin(),
     },
     {
-      icon: "notifications-outline",
-      title: "Notifications",
-      onPress: () =>
-        user ? console.log("Notifications pressed") : handleLogin(),
-    },
-    {
       icon: "settings-outline",
       title: "Settings",
-      onPress: () => console.log("Settings pressed"),
+      onPress: () => navigation.navigate("Settings"),
     },
     {
       icon: "help-circle-outline",
