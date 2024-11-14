@@ -40,4 +40,5 @@ yarn-error.*
 # vscode
 .vscode/
 
+# vscode
 .idea/
