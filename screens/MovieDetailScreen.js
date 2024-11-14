@@ -8,8 +8,9 @@ import {getImageUrl} from '../api/tmdbApi';
 import {useNavigation} from '@react-navigation/native';
 import {auth, database} from '../firebase/firebaseSetup';
 import {
-    writeToDB, deleteFromDB, getAllDocs, updateDocInDB, getDocsByQuery,
+    writeToDB, deleteFromDB, getAllDocs, updateDocInDB, getDocsByQueries
 } from '../firebase/firestoreHelper';
+import {where} from "firebase/firestore";
 
 const {width} = Dimensions.get('window');
 
@@ -31,7 +32,7 @@ export default function MovieDetailScreen({route}) {
 
     const fetchReviews = async () => {
         try {
-            const reviewsData = await getDocsByQuery('reviews', 'movieId', '==', movieId);
+            const reviewsData = await getDocsByQueries('reviews', [where('movieId', '==', movieId),]);
             setReviews(reviewsData);
             reviewsData.sort((a, b) => b.timestamp - a.timestamp);
             setReviews(reviewsData);
@@ -91,16 +92,23 @@ export default function MovieDetailScreen({route}) {
         }
     };
     const handleBookmarkPress = async () => {
-        if (!user) {
-            navigation.navigate('Auth');
-            return;
-        }
-        try {
-            if (isBookmarked) {
-                await deleteFromDB(bookmarksID, 'bookmarks');
-                setIsBookmarked(false);
-                setBookmarksID(null);
-            } else {
+    if (!user) {
+        navigation.navigate('Auth');
+        return;
+    }
+    try {
+        if (isBookmarked) {
+            await deleteFromDB(bookmarksID, 'bookmarks');
+            setIsBookmarked(false);
+            setBookmarksID(null);
+        } else {
+            // Check if the bookmark already exists
+            const existingBookmark = await getDocsByQueries('bookmarks', [
+                where('movieId', '==', movieId),
+                where('userId', '==', user.uid),
+            ], true);
+
+            if (!existingBookmark) {
                 const data = {
                     movieId,
                     userId: user.uid,
@@ -110,18 +118,26 @@ export default function MovieDetailScreen({route}) {
                 };
                 await writeToDB(data, 'bookmarks');
                 setIsBookmarked(true);
-                // 获取新添加的收藏的文档 ID
-                const bookmarkData = await getDocsByQuery('bookmarks', 'movieId', '==', movieId);
+
+                // Get the new bookmark ID
+                const bookmarkData = await getDocsByQueries('bookmarks', [
+                    where('movieId', '==', movieId),
+                    where('userId', '==', user.uid),
+                ], true);
                 setBookmarksID(bookmarkData.id);
             }
-        } catch (error) {
-            console.error('Error handling bookmark:', error);
         }
-    };
+    } catch (error) {
+        console.error('Error handling bookmark:', error);
+    }
+};
     const checkIfBookmarked = async () => {
         if (!user) return;
         try {
-            const bookmarkData = await getDocsByQuery('bookmarks', 'movieId', '==', movieId);
+            const bookmarkData = await getDocsByQueries('bookmarks', [
+                where('movieId', '==', movieId),
+                where('userId', '==', user.uid),
+            ], true); // Pass 'true' to get a single document
             if (bookmarkData && bookmarkData.userId === user.uid) {
                 setIsBookmarked(true);
                 setBookmarksID(bookmarkData.id);
@@ -151,8 +167,7 @@ export default function MovieDetailScreen({route}) {
         return null;
     }
 
-    return (
-        <View style={{flex: 1}}>
+    return (<View style={{flex: 1}}>
             <ScrollView style={styles.container}>
                 <Image
                     source={{uri: getImageUrl(movie.backdrop_path)}}
@@ -325,14 +340,12 @@ export default function MovieDetailScreen({route}) {
                                     {userReview ? 'Update' : 'Submit'}
                                 </Text>
                             </TouchableOpacity>
-                            {userReview && (
-                                <TouchableOpacity
-                                    style={[styles.modalButton, {backgroundColor: 'red'}]}
-                                    onPress={handleDeleteReview}
-                                >
-                                    <Text style={styles.modalButtonText}>Delete</Text>
-                                </TouchableOpacity>
-                            )}
+                            {userReview && (<TouchableOpacity
+                                style={[styles.modalButton, {backgroundColor: 'red'}]}
+                                onPress={handleDeleteReview}
+                            >
+                                <Text style={styles.modalButtonText}>Delete</Text>
+                            </TouchableOpacity>)}
                             <TouchableOpacity
                                 style={styles.modalButton}
                                 onPress={() => setIsModalVisible(false)}

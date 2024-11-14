@@ -2,9 +2,10 @@ import React, {useEffect, useState} from 'react';
 import {FlatList, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {auth} from '../firebase/firebaseSetup';
-import {getDocsByQuery} from '../firebase/firestoreHelper';
+import {getDocsByQueries} from '../firebase/firestoreHelper';
 import {getImageUrl} from '../api/tmdbApi';
 import {colors, spacing} from '../styles/globalStyles';
+import {where} from "firebase/firestore";
 
 export default function BookmarksScreen() {
     const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
@@ -23,7 +24,9 @@ export default function BookmarksScreen() {
             return;
         }
         try {
-            const bookmarksData = await getDocsByQuery('bookmarks', 'userId', '==', user.uid);
+            const bookmarksData = await getDocsByQueries('bookmarks', [
+                where('userId', '==', user.uid),
+            ]);
             setBookmarkedMovies(bookmarksData);
         } catch (error) {
             console.error('Error fetching bookmarks:', error);
