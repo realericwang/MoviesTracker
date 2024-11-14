@@ -9,6 +9,8 @@ import {
   View,
   ActivityIndicator,
   RefreshControl,
+  Modal,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { auth } from "../firebase/firebaseSetup";
@@ -25,6 +27,8 @@ export default function BookmarksScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredMovies, setFilteredMovies] = useState([]);
+  const [sortBy, setSortBy] = useState('timestamp');
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const navigation = useNavigation();
   const user = auth.currentUser;
 
@@ -64,8 +68,21 @@ export default function BookmarksScreen() {
     const filtered = bookmarkedMovies.filter((movie) =>
       movie.movieTitle.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    setFilteredMovies(filtered);
-  }, [searchQuery, bookmarkedMovies]);
+
+    // Sort the filtered movies
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortBy === 'year') {
+        const yearA = new Date(a.releaseDate).getFullYear();
+        const yearB = new Date(b.releaseDate).getFullYear();
+        return yearB - yearA; // Sort by year descending
+      } else {
+        // Sort by timestamp descending (most recently added first)
+        return b.timestamp - a.timestamp;
+      }
+    });
+
+    setFilteredMovies(sorted);
+  }, [searchQuery, bookmarkedMovies, sortBy]);
 
   const renderItem = useCallback(
     ({ item }) => (
@@ -181,6 +198,88 @@ export default function BookmarksScreen() {
           onChangeText={setSearchQuery}
           placeholderTextColor={colors.textSecondary}
         />
+        <View style={styles.sortContainer}>
+          <TouchableOpacity
+            style={[styles.dropdownButton, isDropdownVisible && styles.dropdownButtonActive]}
+            onPress={() => setIsDropdownVisible(true)}
+          >
+            <Text style={styles.dropdownButtonText}>
+              Sort by: {sortBy === 'timestamp' ? 'Date Added' : 'Release Year'}
+            </Text>
+            <Ionicons name="chevron-down" size={16} color={colors.text} />
+          </TouchableOpacity>
+
+          <Modal
+            visible={isDropdownVisible}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setIsDropdownVisible(false)}
+          >
+            <TouchableWithoutFeedback onPress={() => setIsDropdownVisible(false)}>
+              <View style={styles.modalOverlay}>
+                <TouchableWithoutFeedback>
+                  <View style={styles.dropdownMenu}>
+                    <TouchableOpacity
+                      style={[
+                        styles.dropdownItem,
+                        sortBy === 'timestamp' && styles.dropdownItemSelected
+                      ]}
+                      onPress={() => {
+                        setSortBy('timestamp');
+                        setIsDropdownVisible(false);
+                      }}
+                    >
+                      <View style={styles.dropdownItemContent}>
+                        <Ionicons 
+                          name="time-outline" 
+                          size={20} 
+                          color={sortBy === 'timestamp' ? colors.primary : colors.text} 
+                        />
+                        <Text style={[
+                          styles.dropdownItemText,
+                          sortBy === 'timestamp' && styles.dropdownItemTextSelected
+                        ]}>
+                          Date Added
+                        </Text>
+                      </View>
+                      {sortBy === 'timestamp' && (
+                        <Ionicons name="checkmark" size={20} color={colors.primary} />
+                      )}
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={[
+                        styles.dropdownItem,
+                        sortBy === 'year' && styles.dropdownItemSelected
+                      ]}
+                      onPress={() => {
+                        setSortBy('year');
+                        setIsDropdownVisible(false);
+                      }}
+                    >
+                      <View style={styles.dropdownItemContent}>
+                        <Ionicons 
+                          name="calendar-outline" 
+                          size={20} 
+                          color={sortBy === 'year' ? colors.primary : colors.text} 
+                        />
+                        <Text style={[
+                          styles.dropdownItemText,
+                          sortBy === 'year' && styles.dropdownItemTextSelected
+                        ]}>
+                          Release Year
+                        </Text>
+                      </View>
+                      {sortBy === 'year' && (
+                        <Ionicons name="checkmark" size={20} color={colors.primary} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </TouchableWithoutFeedback>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
+        </View>
       </View>
       <FlatList
         data={filteredMovies}
@@ -345,5 +444,84 @@ const styles = StyleSheet.create({
     color: colors.text,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  sortContainer: {
+    marginTop: spacing.xs,
+  },
+  dropdownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  dropdownButtonActive: {
+    borderColor: colors.primary,
+    backgroundColor: `${colors.primary}10`,
+  },
+  dropdownButtonText: {
+    color: colors.text,
+    fontSize: 14,
+    marginRight: spacing.xs,
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-start',
+    paddingTop: 150,
+    paddingHorizontal: spacing.lg,
+  },
+  dropdownMenu: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: `${colors.border}80`,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: `${colors.border}40`,
+  },
+  dropdownItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  dropdownItemSelected: {
+    backgroundColor: `${colors.primary}15`,
+  },
+  dropdownItemText: {
+    color: colors.text,
+    fontSize: 16,
+    marginLeft: spacing.xs,
+  },
+  dropdownItemTextSelected: {
+    color: colors.primary,
+    fontWeight: '600',
   },
 });
