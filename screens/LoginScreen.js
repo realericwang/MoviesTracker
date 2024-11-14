@@ -6,21 +6,39 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  Alert,
 } from 'react-native';
+import { colors, spacing } from '../styles/globalStyles';
+import { login } from '../firebase/authHelper';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    // TODO: Implement login logic here
-    console.log('Login attempted with:', email, password);
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { user, error } = await login(email, password);
+      if (error) {
+        Alert.alert('Error', error);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.formContainer}>
-        <Text style={styles.title}>Login</Text>
+        <Text style={styles.title}>Welcome Back</Text>
         
         <TextInput
           style={styles.input}
@@ -29,6 +47,7 @@ const LoginScreen = ({ navigation }) => {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          editable={!loading}
         />
 
         <TextInput
@@ -37,20 +56,25 @@ const LoginScreen = ({ navigation }) => {
           value={password}
           onChangeText={setPassword}
           secureTextEntry
+          editable={!loading}
         />
 
         <TouchableOpacity 
-          style={styles.button}
+          style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleLogin}
+          disabled={loading}
         >
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>
+            {loading ? 'Logging in...' : 'Login'}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
           onPress={() => navigation.navigate('SignUp')}
+          disabled={loading}
         >
           <Text style={styles.linkText}>
-            Don't have an account? Sign up
+            Don't have an account? Sign Up
           </Text>
         </TouchableOpacity>
       </View>
@@ -61,44 +85,49 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: colors.background,
   },
   formContainer: {
     flex: 1,
-    padding: 20,
+    padding: spacing.lg,
     justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 30,
+    color: colors.text,
+    marginBottom: spacing.xl,
     textAlign: 'center',
   },
   input: {
     height: 50,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border,
     borderRadius: 8,
-    paddingHorizontal: 15,
-    marginBottom: 15,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    color: colors.text,
   },
   button: {
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.primary,
     height: 50,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 15,
+    marginTop: spacing.md,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   buttonText: {
-    color: '#fff',
+    color: colors.background,
     fontSize: 16,
     fontWeight: 'bold',
   },
   linkText: {
-    color: '#007AFF',
+    color: colors.primary,
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: spacing.lg,
   },
 });
 
