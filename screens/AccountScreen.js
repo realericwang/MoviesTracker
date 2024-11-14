@@ -61,10 +61,28 @@ const AccountScreen = () => {
     if (!user) {
       return (
         <View style={styles.header}>
+          <View style={styles.headerBackground}>
+            <Ionicons 
+              name="triangle-outline" 
+              size={200} 
+              color={colors.background}
+              style={{ position: 'absolute', right: -50, top: -50, transform: [{ rotate: '45deg' }] }}
+            />
+          </View>
           <View style={styles.profileSection}>
-            <Ionicons name="person-circle-outline" size={80} color={colors.textSecondary} />
+            <Ionicons 
+              name="person-circle-outline" 
+              size={90} 
+              color={colors.background} 
+              style={{ 
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+              }}
+            />
             <View style={styles.profileInfo}>
-              <Text style={styles.loginPrompt}>Login to access all features</Text>
+              <Text style={styles.loginPrompt}>Welcome to MoviesTracker</Text>
               <TouchableOpacity 
                 style={styles.loginButton}
                 onPress={handleLogin}
@@ -79,6 +97,14 @@ const AccountScreen = () => {
 
     return (
       <View style={styles.header}>
+        <View style={styles.headerBackground}>
+          <Ionicons 
+            name="triangle-outline" 
+            size={200} 
+            color={colors.background}
+            style={{ position: 'absolute', right: -50, top: -50, transform: [{ rotate: '45deg' }] }}
+          />
+        </View>
         <View style={styles.profileSection}>
           <Image
             source={{ uri: user.photoURL || 'https://via.placeholder.com/100' }}
@@ -134,45 +160,71 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    padding: spacing.lg,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    paddingTop: spacing.xl * 2,
+    paddingBottom: spacing.xl,
+    backgroundColor: colors.primary,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+    marginBottom: spacing.lg,
   },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: spacing.lg,
   },
   profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    marginRight: spacing.md,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    marginRight: spacing.lg,
+    borderWidth: 4,
+    borderColor: colors.background,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   profileInfo: {
     flex: 1,
   },
   name: {
-    fontSize: 20,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: colors.text,
+    color: colors.background,
     marginBottom: spacing.xs,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   email: {
-    fontSize: 14,
-    color: colors.textSecondary,
+    fontSize: 15,
+    color: colors.background,
+    opacity: 0.9,
+    marginBottom: spacing.xs,
   },
   menuSection: {
     marginTop: spacing.md,
+    paddingHorizontal: spacing.sm,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: spacing.md,
-    backgroundColor: colors.background,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    marginBottom: spacing.sm,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   menuItemContent: {
     flexDirection: 'row',
@@ -182,6 +234,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text,
     marginLeft: spacing.md,
+    fontWeight: '500',
   },
   logoutButton: {
     flexDirection: 'row',
@@ -190,10 +243,15 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginTop: spacing.xl,
     marginHorizontal: spacing.lg,
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.error,
+    shadowColor: colors.error,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   logoutText: {
     marginLeft: spacing.sm,
@@ -209,20 +267,41 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   loginPrompt: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
+    fontSize: 20,
+    color: colors.background,
+    marginBottom: spacing.md,
+    fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   loginButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.background,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: 8,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 25,
+    shadowColor: 'rgba(0, 0, 0, 0.3)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+    alignSelf: 'flex-start',
   },
   loginButtonText: {
-    color: colors.background,
-    fontSize: 14,
-    fontWeight: '600',
+    color: colors.primary,
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  headerBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '100%',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    opacity: 0.1,
   },
 });
 
