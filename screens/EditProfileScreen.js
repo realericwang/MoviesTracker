@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  Modal,
+  Platform,
 } from "react-native";
 import { colors, spacing } from "../styles/globalStyles";
 import { auth } from "../firebase/firebaseSetup";
@@ -15,12 +17,41 @@ import { updateProfile } from "firebase/auth";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { database } from "../firebase/firebaseSetup";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 const EditProfileScreen = ({ navigation }) => {
   const user = auth.currentUser;
   const [displayName, setDisplayName] = useState(user?.displayName || "");
   const [photoURL, setPhotoURL] = useState(user?.photoURL || "");
+  const [birthdate, setBirthdate] = useState(null);
+  const [gender, setGender] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const fetchUserData = async () => {
+    if (user) {
+      try {
+        const userDoc = await getDoc(doc(database, "users", user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.birthdate) {
+            setBirthdate(userData.birthdate.toDate());
+          }
+          if (userData.gender) {
+            setGender(userData.gender);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    }
+  };
 
   const handleImagePick = async () => {
     try {
@@ -36,13 +67,13 @@ const EditProfileScreen = ({ navigation }) => {
         const imageUri = result.assets[0].uri;
         const response = await fetch(imageUri);
         const blob = await response.blob();
-        
+
         const storage = getStorage();
         const imageRef = ref(storage, `profile_images/${user.uid}`);
-        
+
         await uploadBytes(imageRef, blob);
         const downloadURL = await getDownloadURL(imageRef);
-        
+
         setPhotoURL(downloadURL);
         setLoading(false);
       }
@@ -53,12 +84,27 @@ const EditProfileScreen = ({ navigation }) => {
     }
   };
 
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setBirthdate(selectedDate);
+    }
+  };
+
+  const handleGenderSelect = (selectedGender) => {
+    setGender(selectedGender);
+  };
+
   const handleSave = async () => {
     setLoading(true);
     try {
       await updateProfile(user, {
         displayName: displayName,
         photoURL: photoURL,
+      });
+      await setDoc(doc(database, "users", user.uid), {
+        birthdate: birthdate,
+        gender: gender,
       });
       Alert.alert("Success", "Profile updated successfully");
       navigation.goBack();
@@ -119,7 +165,52 @@ const EditProfileScreen = ({ navigation }) => {
 
           <Text style={styles.label}>Email</Text>
           <Text style={styles.emailText}>{user?.email}</Text>
+
+          <Text style={styles.label}>Birthdate</Text>
+          <TouchableOpacity
+            style={styles.input}
+            onPress={() => setShowDatePicker(true)}
+            disabled={loading}
+          >
+            <Text style={[styles.inputText, !birthdate && styles.placeholder]}>
+              {birthdate ? birthdate.toLocaleDateString() : "Select birthdate"}
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.label}>Gender</Text>
+          <View style={styles.genderContainer}>
+            {["Male", "Female", "Other", "Prefer not to say"].map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={[
+                  styles.genderOption,
+                  gender === option && styles.genderOptionSelected,
+                ]}
+                onPress={() => handleGenderSelect(option)}
+                disabled={loading}
+              >
+                <Text
+                  style={[
+                    styles.genderOptionText,
+                    gender === option && styles.genderOptionTextSelected,
+                  ]}
+                >
+                  {option}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={birthdate || new Date()}
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "default"}
+            onChange={handleDateChange}
+            maximumDate={new Date()}
+          />
+        )}
 
         {loading && (
           <View style={styles.loadingOverlay}>
@@ -218,6 +309,39 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.3)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  genderContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginTop: spacing.xs,
+    marginBottom: spacing.lg,
+  },
+  genderOption: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginRight: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  genderOptionSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  genderOptionText: {
+    color: colors.text,
+    fontSize: 14,
+  },
+  genderOptionTextSelected: {
+    color: colors.background,
+  },
+  inputText: {
+    color: colors.text,
+    fontSize: 16,
+  },
+  placeholder: {
+    color: colors.textSecondary,
   },
 });
 
