@@ -9,6 +9,8 @@ import SearchResults from '../components/SearchResults';
 import { useNavigation } from '@react-navigation/native';
 import debounce from 'lodash/debounce';
 
+const SEARCH_DELAY = 500; // 500ms delay
+
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,7 +30,7 @@ export default function HomeScreen() {
       } else {
         setSearchResults({ movies: [], tvShows: [] });
       }
-    }, 300),
+    }, SEARCH_DELAY),
     []
   );
 
