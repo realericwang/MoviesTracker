@@ -104,7 +104,6 @@ export default function MovieDetailScreen({ route }) {
               </View>
             ))}
           </View>
-
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Overview</Text>
             <Text style={styles.overviewText}>{movie.overview}</Text>

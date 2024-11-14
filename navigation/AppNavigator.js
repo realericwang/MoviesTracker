@@ -13,6 +13,7 @@ import BookmarksScreen from '../screens/BookmarksScreen';
 import FootprintScreen from '../screens/FootprintScreen';
 import AccountScreen from '../screens/AccountScreen';
 import MovieDetailScreen from '../screens/MovieDetailScreen';
+
 import TVShowDetailScreen from '../screens/TVShowDetailScreen';
 
 const Stack = createStackNavigator();
@@ -72,6 +73,7 @@ export function AppNavigator() {
       <Stack.Screen name="MovieDetail" component={MovieDetailScreen} />
       <Stack.Screen name="TVShowDetail" component={TVShowDetailScreen} />
       <Stack.Screen name="Auth" component={AuthStack} />
+
     </Stack.Navigator>
   );
 }
