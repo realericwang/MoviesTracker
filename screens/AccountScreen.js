@@ -6,29 +6,39 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing } from '../styles/globalStyles';
 import { useNavigation } from '@react-navigation/native';
+import { auth } from '../firebase/firebaseSetup';
+import { logout } from '../firebase/authHelper';
 
 const AccountScreen = () => {
   const navigation = useNavigation();
+  const user = auth.currentUser;
 
-  const handleLogout = () => {
-    // TODO: Implement logout logic
-    navigation.navigate('Login');
+  const handleLogout = async () => {
+    const { error } = await logout();
+    if (error) {
+      Alert.alert('Error', error);
+    }
+  };
+
+  const handleLogin = () => {
+    navigation.navigate('Auth');
   };
 
   const menuItems = [
     {
       icon: 'person-outline',
       title: 'Edit Profile',
-      onPress: () => console.log('Edit Profile pressed'),
+      onPress: () => user ? console.log('Edit Profile pressed') : handleLogin(),
     },
     {
       icon: 'notifications-outline',
       title: 'Notifications',
-      onPress: () => console.log('Notifications pressed'),
+      onPress: () => user ? console.log('Notifications pressed') : handleLogin(),
     },
     {
       icon: 'settings-outline',
@@ -47,20 +57,45 @@ const AccountScreen = () => {
     },
   ];
 
-  return (
-    <ScrollView style={styles.container}>
+  const renderHeader = () => {
+    if (!user) {
+      return (
+        <View style={styles.header}>
+          <View style={styles.profileSection}>
+            <Ionicons name="person-circle-outline" size={80} color={colors.textSecondary} />
+            <View style={styles.profileInfo}>
+              <Text style={styles.loginPrompt}>Login to access all features</Text>
+              <TouchableOpacity 
+                style={styles.loginButton}
+                onPress={handleLogin}
+              >
+                <Text style={styles.loginButtonText}>Login / Sign Up</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      );
+    }
+
+    return (
       <View style={styles.header}>
         <View style={styles.profileSection}>
           <Image
-            source={{ uri: 'https://via.placeholder.com/100' }}
+            source={{ uri: user.photoURL || 'https://via.placeholder.com/100' }}
             style={styles.profileImage}
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>John Doe</Text>
-            <Text style={styles.email}>john.doe@example.com</Text>
+            <Text style={styles.name}>{user.displayName || 'User'}</Text>
+            <Text style={styles.email}>{user.email}</Text>
           </View>
         </View>
       </View>
+    );
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      {renderHeader()}
 
       <View style={styles.menuSection}>
         {menuItems.map((item, index) => (
@@ -78,13 +113,15 @@ const AccountScreen = () => {
         ))}
       </View>
 
-      <TouchableOpacity 
-        style={styles.logoutButton}
-        onPress={handleLogout}
-      >
-        <Ionicons name="log-out-outline" size={24} color={colors.error} />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+      {user && (
+        <TouchableOpacity 
+          style={styles.logoutButton}
+          onPress={handleLogout}
+        >
+          <Ionicons name="log-out-outline" size={24} color={colors.error} />
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      )}
 
       <Text style={styles.version}>Version 1.0.0</Text>
     </ScrollView>
@@ -170,6 +207,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: spacing.lg,
     marginBottom: spacing.xl,
+  },
+  loginPrompt: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
+  loginButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+  },
+  loginButtonText: {
+    color: colors.background,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 
