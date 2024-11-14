@@ -343,7 +343,20 @@ export default function MovieDetailScreen({ route }) {
         style={styles.floatingButton}
         onPress={() => {
           if (!user) {
-            navigation.navigate("Auth");
+            Alert.alert(
+              "Login Required",
+              "You need to login to write reviews",
+              [
+                {
+                  text: "Cancel",
+                  style: "cancel",
+                },
+                {
+                  text: "Login",
+                  onPress: () => navigation.navigate("Auth"),
+                },
+              ]
+            );
             return;
           }
           setIsModalVisible(true);
