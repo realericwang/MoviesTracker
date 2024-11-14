@@ -4,6 +4,7 @@ import {
   Image,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
   ActivityIndicator,
@@ -22,6 +23,8 @@ export default function BookmarksScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredMovies, setFilteredMovies] = useState([]);
   const navigation = useNavigation();
   const user = auth.currentUser;
 
@@ -56,6 +59,13 @@ export default function BookmarksScreen() {
       fetchBookmarkedMovies();
     });
   }, [navigation]);
+
+  useEffect(() => {
+    const filtered = bookmarkedMovies.filter((movie) =>
+      movie.movieTitle.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredMovies(filtered);
+  }, [searchQuery, bookmarkedMovies]);
 
   const renderItem = useCallback(
     ({ item }) => (
@@ -162,15 +172,26 @@ export default function BookmarksScreen() {
   }
 
   return (
-    <FlatList
-      data={bookmarkedMovies}
-      keyExtractor={(item) => item.id}
-      renderItem={renderItem}
-      contentContainerStyle={styles.listContainer}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    />
+    <View style={styles.container}>
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search bookmarks..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor={colors.textSecondary}
+        />
+      </View>
+      <FlatList
+        data={filteredMovies}
+        keyExtractor={(item) => item.id}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContainer}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      />
+    </View>
   );
 }
 
@@ -308,5 +329,21 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontSize: 13,
     opacity: 0.8,
+  },
+  searchContainer: {
+    padding: spacing.sm,
+    paddingBottom: spacing.sm,
+    backgroundColor: colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  searchInput: {
+    height: 40,
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    paddingHorizontal: spacing.lg,
+    color: colors.text,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
 });
