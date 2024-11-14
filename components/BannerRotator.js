@@ -7,11 +7,14 @@ import {
   Animated,
   Dimensions,
   StyleSheet,
+  TouchableOpacity,
 } from "react-native";
 import { colors, spacing } from "../styles/globalStyles";
 import { getImageUrl } from "../api/tmdbApi";
+import { useNavigation } from "@react-navigation/native";
 
 export default function BannerRotator({ movies }) {
+  const navigation = useNavigation();
   const scrollX = new Animated.Value(0);
   const { width } = Dimensions.get("window");
   const scrollViewRef = useRef(null);
@@ -46,6 +49,14 @@ export default function BannerRotator({ movies }) {
     }
   );
 
+  const handleBannerPress = (movie) => {
+    const isTV = movie.first_air_date !== undefined;
+    navigation.navigate(
+      isTV ? "TVShowDetail" : "MovieDetail",
+      isTV ? { showId: movie.id } : { movieId: movie.id }
+    );
+  };
+
   return (
     <View style={styles.bannerContainer}>
       <ScrollView
@@ -61,20 +72,27 @@ export default function BannerRotator({ movies }) {
         contentContainerStyle={{ flexGrow: 0 }}
       >
         {movies.map((movie, index) => (
-          <View key={movie.id} style={[styles.bannerSlide, { width: width }]}>
+          <TouchableOpacity
+            key={movie.id}
+            style={[styles.bannerSlide, { width: width }]}
+            onPress={() => handleBannerPress(movie)}
+            activeOpacity={0.9}
+          >
             <Image
               source={{ uri: getImageUrl(movie.backdrop_path) }}
               style={styles.bannerImage}
             />
             <View style={styles.bannerContent}>
-              <Text style={styles.bannerTitle}>{movie.title}</Text>
+              <Text style={styles.bannerTitle}>
+                {movie.title || movie.name}
+              </Text>
               <View style={styles.ratingContainer}>
                 <Text style={styles.rating}>
                   ★ {movie.vote_average.toFixed(1)}
                 </Text>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
       <View style={styles.pagination}>
