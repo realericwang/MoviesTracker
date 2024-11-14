@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { colors, spacing } from '../styles/globalStyles';
-import { getImageUrl } from '../api/tmdbApi';
+import React from "react";
+import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { colors, spacing } from "../styles/globalStyles";
+import { getImageUrl } from "../api/tmdbApi";
 
 export default function MovieCard({ movie, onPress }) {
   const title = movie.title || movie.name;
   const releaseDate = movie.release_date || movie.first_air_date;
-  
+
   return (
     <TouchableOpacity onPress={onPress} style={styles.container}>
       <Image
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     marginRight: spacing.md,
   },
   poster: {
-    width: '100%',
+    width: "100%",
     height: 210,
     borderRadius: 8,
     backgroundColor: colors.border,
@@ -41,17 +41,17 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: colors.text,
     marginBottom: spacing.xs,
   },
   ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   rating: {
     fontSize: 12,
     color: colors.textSecondary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

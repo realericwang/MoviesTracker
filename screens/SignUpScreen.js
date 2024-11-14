@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,24 +7,24 @@ import {
   StyleSheet,
   SafeAreaView,
   Alert,
-} from 'react-native';
-import { colors, spacing } from '../styles/globalStyles';
-import { signUp } from '../firebase/authHelper';
+} from "react-native";
+import { colors, spacing } from "../styles/globalStyles";
+import { signUp } from "../firebase/authHelper";
 
 const SignUpScreen = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
     if (!email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert("Error", "Please fill in all fields");
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      Alert.alert("Error", "Passwords do not match");
       return;
     }
 
@@ -32,10 +32,10 @@ const SignUpScreen = ({ navigation }) => {
     try {
       const { user, error } = await signUp(email, password);
       if (error) {
-        Alert.alert('Error', error);
+        Alert.alert("Error", error);
       }
     } catch (error) {
-      Alert.alert('Error', 'An unexpected error occurred');
+      Alert.alert("Error", "An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ const SignUpScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.formContainer}>
         <Text style={styles.title}>Create Account</Text>
-        
+
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -74,23 +74,21 @@ const SignUpScreen = ({ navigation }) => {
           editable={!loading}
         />
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleSignUp}
           disabled={loading}
         >
           <Text style={styles.buttonText}>
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? "Creating Account..." : "Sign Up"}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity 
-          onPress={() => navigation.navigate('Login')}
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Login")}
           disabled={loading}
         >
-          <Text style={styles.linkText}>
-            Already have an account? Login
-          </Text>
+          <Text style={styles.linkText}>Already have an account? Login</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -105,14 +103,14 @@ const styles = StyleSheet.create({
   formContainer: {
     flex: 1,
     padding: spacing.lg,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.text,
     marginBottom: spacing.xl,
-    textAlign: 'center',
+    textAlign: "center",
   },
   input: {
     height: 50,
@@ -127,8 +125,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     height: 50,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: spacing.md,
   },
   buttonDisabled: {
@@ -137,11 +135,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: colors.background,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   linkText: {
     color: colors.primary,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: spacing.lg,
   },
 });
