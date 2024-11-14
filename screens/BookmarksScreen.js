@@ -19,7 +19,18 @@ import { getImageUrl } from "../api/tmdbApi";
 import { colors, spacing } from "../styles/globalStyles";
 import { where } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
+import { onAuthStateChanged } from "firebase/auth";
 
+/**
+ * BookmarksScreen Component
+ *
+ * This component displays a list of bookmarked movies for the authenticated user.
+ * It allows users to search and sort their bookmarks, refresh the list, and navigate
+ * to detailed movie information. If the user is not authenticated, it prompts them to sign in.
+ *
+ * @component
+ * @returns {React.Element} The rendered component.
+ */
 export default function BookmarksScreen() {
   const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,8 +41,13 @@ export default function BookmarksScreen() {
   const [sortBy, setSortBy] = useState("timestamp");
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const navigation = useNavigation();
-  const user = auth.currentUser;
+  const [user, setUser] = useState(auth.currentUser);
 
+
+  /**
+   * Fetches bookmarked movies from Firestore based on the authenticated user.
+   * Sets the `bookmarkedMovies` state with the fetched data.
+   */
   const fetchBookmarkedMovies = async () => {
     if (!user) {
       setBookmarkedMovies([]);
@@ -63,6 +79,15 @@ export default function BookmarksScreen() {
       fetchBookmarkedMovies();
     });
   }, [navigation]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      fetchBookmarkedMovies();
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const filtered = bookmarkedMovies.filter((movie) =>

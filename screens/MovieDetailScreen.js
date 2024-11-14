@@ -30,6 +30,22 @@ import { where } from "firebase/firestore";
 
 const { width } = Dimensions.get("window");
 
+/**
+ * MovieDetailScreen Component
+ *
+ * This component displays detailed information about a specific movie, including its
+ * poster, backdrop, overview, cast, genres, and additional movie info. Users can
+ * bookmark the movie, write reviews, edit their existing reviews, and view all reviews
+ * associated with the movie. It interacts with Firebase for authentication and Firestore
+ * for storing bookmarks and reviews.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {Object} props.route - Route object containing parameters.
+ * @param {Object} props.route.params - Route parameters.
+ * @param {string} props.route.params.movieId - The ID of the movie to display details for.
+ * @returns {React.Element} The rendered MovieDetailScreen component.
+ */
 export default function MovieDetailScreen({ route }) {
   const { movieId } = route.params;
   const [movie, setMovie] = useState(null);

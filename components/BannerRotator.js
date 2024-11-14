@@ -12,7 +12,15 @@ import {
 import { colors, spacing } from "../styles/globalStyles";
 import { getImageUrl } from "../api/tmdbApi";
 import { useNavigation } from "@react-navigation/native";
-
+/**
+ * BannerRotator component for displaying a rotating banner of movie or TV show images.
+ *
+ * This component uses a horizontally scrolling ScrollView to display a series of movie banners.  It automatically rotates through the banners at intervals and includes pagination dots to indicate the current banner.  Handles navigation to movie or TV show detail screens.
+ *
+ * @param {object} props - Component props.
+ * @param {Array<object>} props.movies - An array of movie or TV show objects, each with `backdrop_path`, `title`/`name`, and `vote_average` properties.
+ * @returns {JSX.Element} The BannerRotator component.
+ */
 export default function BannerRotator({ movies }) {
   const navigation = useNavigation();
   const scrollX = new Animated.Value(0);

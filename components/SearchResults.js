@@ -9,7 +9,18 @@ import {
 } from "react-native";
 import { colors, spacing } from "../styles/globalStyles";
 import { getImageUrl } from "../api/tmdbApi";
-
+/**
+ * SearchResults component to display a list of movie and TV show search results.
+ *
+ * This component takes movie and TV show data as props and renders a FlatList to display the results.  It handles the display of movie posters or placeholders,  title, year, type (movie or TV show), and rating.  The results are sorted by popularity.
+ *
+ * @param {object} props - Component props.
+ * @param {Array<object>} props.movies - An array of movie objects.
+ * @param {Array<object>} props.tvShows - An array of TV show objects.
+ * @param {function} props.onMoviePress - Callback function for when a movie is pressed.
+ * @param {function} props.onTVShowPress - Callback function for when a TV show is pressed.
+ * @returns {JSX.Element} The SearchResults component.
+ */
 export default function SearchResults({
   movies,
   tvShows,

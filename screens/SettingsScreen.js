@@ -10,7 +10,16 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../styles/globalStyles";
-
+/**
+ * SettingsScreen component for managing application settings.
+ *
+ * This component displays a list of settings options, including dark mode toggle and push notifications.
+ * Uses a `ScrollView` to handle potentially long lists of settings.  Currently, only dark mode is functional;  push notifications are placeholders.
+ * The structure allows for easy addition of new settings sections and items with different types (toggle, link, info).
+ *
+ * @param {object} navigation - React Navigation's navigation prop (not currently used, but included for potential future expansion).
+ * @returns {JSX.Element} The SettingsScreen component.
+ */
 const SettingsScreen = ({ navigation }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
 

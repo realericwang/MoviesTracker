@@ -10,7 +10,17 @@ import {
 } from "react-native";
 import { colors, spacing } from "../styles/globalStyles";
 import { login } from "../firebase/authHelper";
-
+/**
+ * LoginScreen component for user authentication.
+ *
+ * This component provides a form for users to log in with their email and password.
+ * It uses Firebase's `login` function for authentication and handles loading state and error messages.
+ * Navigates to the Account screen upon successful login and to the SignUp screen if the user needs to create an account.
+ *
+ * @param {object} navigation - React Navigation's navigation prop.
+ * @param {function} navigation.navigate - Function to navigate to other screens.
+ * @returns {JSX.Element} The LoginScreen component.
+ */
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

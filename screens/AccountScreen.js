@@ -14,7 +14,12 @@ import { useNavigation } from "@react-navigation/native";
 import { auth } from "../firebase/firebaseSetup";
 import { logout } from "../firebase/authHelper";
 import { onAuthStateChanged } from "firebase/auth";
-
+/**
+ * Account screen component
+ * @description The Account screen component displays user profile information and menu items
+ * @returns {JSX.Element}
+ * @constructor
+ */
 const AccountScreen = () => {
   const navigation = useNavigation();
   const [user, setUser] = useState(auth.currentUser);

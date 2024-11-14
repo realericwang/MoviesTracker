@@ -16,7 +16,16 @@ import { useNavigation } from "@react-navigation/native";
 import debounce from "lodash/debounce";
 
 const SEARCH_DELAY = 500; // 500ms delay
-
+/**
+ * HomeScreen component for searching movies and TV shows.
+ *
+ * This component displays a search bar at the top, allowing users to search for movies and TV shows.
+ * Based on the search query, it shows either search results or a tab view for browsing movies and TV shows.
+ * Uses `react-native-tab-view` for tabbed navigation between Movies and TV Shows sections.
+ * Implements debouncing to avoid excessive API calls during typing.
+ *
+ * @returns {JSX.Element} The HomeScreen component.
+ */
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState("");

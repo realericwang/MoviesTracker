@@ -10,6 +10,13 @@ import {
   } from "firebase/firestore";
   import { auth, database } from "./firebaseSetup";
   
+  /**
+   * A set of utility functions for interacting with Firestore database.
+   * Provides functions for writing, deleting, reading (all documents and by query), and updating documents.  Handles errors and returns appropriate data.
+   *
+   * @module firebaseDBHelpers
+   */
+  
   export async function writeToDB(data, collectionName) {
     console.log(database);
     try {

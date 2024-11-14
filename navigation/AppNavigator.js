@@ -16,7 +16,17 @@ import MovieDetailScreen from "../screens/MovieDetailScreen";
 import TVShowDetailScreen from "../screens/TVShowDetailScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
-
+/**
+ * AppNavigator: Main navigation structure for the application.
+ *
+ * This component manages the overall navigation flow of the app, switching between
+ * authenticated and unauthenticated states.  It uses a combination of `createStackNavigator` and
+ * `createBottomTabNavigator` to create a tab bar for the main screens and a stack
+ * navigator for nested screens and authentication flow.  It also handles checking user
+ * authentication status using Firebase.
+ *
+ * @returns {JSX.Element} The main navigation structure of the app.
+ */
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 

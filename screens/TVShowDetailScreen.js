@@ -10,7 +10,17 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../styles/globalStyles";
 import { fetchTVShowDetails, getImageUrl } from "../api/tmdbApi";
-
+/**
+ * TVShowDetailScreen component to display details of a TV show.
+ *
+ * This component fetches and displays detailed information about a specific TV show,
+ * including its title, overview, cast, seasons, and ratings.  It handles loading and error states.
+ * Uses TMDB API to fetch TV show details and image URLs.
+ *
+ * @param {object} route - React Navigation's route prop.
+ * @param {number} route.params.showId - The ID of the TV show to display.
+ * @returns {JSX.Element} The TVShowDetailScreen component.
+ */
 export default function TVShowDetailScreen({ route }) {
   const { showId } = route.params;
   const [show, setShow] = useState(null);
