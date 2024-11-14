@@ -44,7 +44,7 @@ const AccountScreen = () => {
       icon: "person-outline",
       title: "Edit Profile",
       onPress: () =>
-        user ? console.log("Edit Profile pressed") : handleLogin(),
+        user ? navigation.navigate("EditProfile") : handleLogin(),
     },
     {
       icon: "settings-outline",
