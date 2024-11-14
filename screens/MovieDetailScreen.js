@@ -10,10 +10,14 @@ import {
   Modal,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../styles/globalStyles";
-import { getImageUrl, fetchMovieDetails } from "../api/tmdbApi";
+import {
+  getImageUrl,
+  fetchMovieDetails as fetchMovieFromAPI,
+} from "../api/tmdbApi";
 import { useNavigation } from "@react-navigation/native";
 import { auth } from "../firebase/firebaseSetup";
 import {
@@ -40,6 +44,8 @@ export default function MovieDetailScreen({ route }) {
   const [reviewText, setReviewText] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const user = auth.currentUser;
+
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchReviews = async () => {
     try {
@@ -198,8 +204,19 @@ export default function MovieDetailScreen({ route }) {
     }
   };
 
+  const loadMovieDetails = async () => {
+    try {
+      const movieData = await fetchMovieFromAPI(movieId);
+      setMovie(movieData);
+    } catch (error) {
+      console.error("Error fetching movie details:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchMovieDetails();
+    loadMovieDetails();
     fetchReviews();
     checkIfBookmarked();
   }, [movieId]);
@@ -210,8 +227,12 @@ export default function MovieDetailScreen({ route }) {
     }
   }, [isModalVisible]);
 
-  if (!movie) {
-    return null;
+  if (isLoading || !movie) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
   }
 
   return (
@@ -684,5 +705,10 @@ const styles = StyleSheet.create({
   reviewText: {
     color: colors.text,
     lineHeight: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
