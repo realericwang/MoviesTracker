@@ -56,7 +56,7 @@ export default function MovieDetailScreen({ route }) {
           <View style={styles.actions}>
             <TouchableOpacity 
               style={styles.bookmarkButton}
-              onPress={() => setIsBookmarked(!isBookmarked)}
+              onPress={handleBookmarkPress}
             >
               <Ionicons
                 name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
