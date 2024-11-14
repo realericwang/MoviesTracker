@@ -15,7 +15,7 @@ export const signUp = async (email, password) => {
     return { user: userCredential.user, error: null };
   } catch (error) {
     let errorMessage = "An error occurred during signup";
-    if (error.code === "auth/email-already-in-use") {
+    if (error.code === "auth/email-already-exists") {
       errorMessage = "This email is already registered";
     } else if (error.code === "auth/weak-password") {
       errorMessage = "Password should be at least 6 characters";
@@ -35,18 +35,30 @@ export const login = async (email, password) => {
     );
     return { user: userCredential.user, error: null };
   } catch (error) {
-    let errorMessage = "An error occurred during login";
-    if (
-      error.code === "auth/user-not-found" ||
-      error.code === "auth/wrong-password"
-    ) {
-      errorMessage = "Invalid email or password";
-    } else if (error.code === "auth/invalid-email") {
-      errorMessage = "Invalid email address";
+    let errorMessage;
+
+    switch (error.code) {
+      case "auth/user-not-found":
+      case "auth/invalid-credential":
+        errorMessage = "Invalid email or password. Please try again.";
+        break;
+      case "auth/invalid-email":
+        errorMessage = "The email address is not valid. Please enter a valid email.";
+        break;
+      case "auth/too-many-requests":
+        errorMessage = "Too many unsuccessful login attempts. Please try again later or reset your password.";
+        break;
+      case "auth/network-request-failed":
+        errorMessage = "Network error. Please check your internet connection and try again.";
+        break;
+      default:
+        errorMessage = "An unexpected error occurred. Please try again.";
+        console.error("Login Error:", error); // Log unexpected errors for debugging
     }
+
     return { user: null, error: errorMessage };
   }
-};
+}
 
 export const logout = async () => {
   try {
