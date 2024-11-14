@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
   View,
   TextInput,
@@ -26,10 +26,10 @@ export default function HomeScreen() {
   });
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [index, setIndex] = useState(0);
-  const [routes] = useState([
+  const routes = [
     { key: "movies", title: "Movies" },
     { key: "tvshows", title: "TV Shows" },
-  ]);
+  ];
 
   const performSearch = useCallback(
     debounce(async (query) => {
@@ -43,37 +43,53 @@ export default function HomeScreen() {
     []
   );
 
-  const handleSearchChange = (text) => {
-    setSearchQuery(text);
-    performSearch(text);
-  };
+  const handleSearchChange = useCallback(
+    (text) => {
+      setSearchQuery(text);
+      performSearch(text);
+    },
+    [performSearch]
+  );
 
-  const handleMoviePress = (movie) => {
-    Keyboard.dismiss();
-    setIsSearchFocused(false);
-    navigation.navigate("MovieDetail", { movieId: movie.id });
-  };
+  const handleMoviePress = useCallback(
+    (movie) => {
+      Keyboard.dismiss();
+      setIsSearchFocused(false);
+      navigation.navigate("MovieDetail", { movieId: movie.id });
+    },
+    [navigation]
+  );
 
-  const handleTVShowPress = (show) => {
-    Keyboard.dismiss();
-    setIsSearchFocused(false);
-    navigation.navigate("TVShowDetail", { showId: show.id });
-  };
+  const handleTVShowPress = useCallback(
+    (show) => {
+      Keyboard.dismiss();
+      setIsSearchFocused(false);
+      navigation.navigate("TVShowDetail", { showId: show.id });
+    },
+    [navigation]
+  );
 
-  const renderScene = SceneMap({
-    movies: Movies,
-    tvshows: TVShows,
-  });
+  const renderScene = useMemo(
+    () =>
+      SceneMap({
+        movies: Movies,
+        tvshows: TVShows,
+      }),
+    []
+  );
 
-  const renderTabBar = (props) => (
-    <TabBar
-      {...props}
-      indicatorStyle={{ backgroundColor: colors.primary }}
-      style={{ backgroundColor: colors.background }}
-      labelStyle={{ color: colors.text }}
-      activeColor={colors.primary}
-      inactiveColor={colors.textSecondary}
-    />
+  const renderTabBar = useCallback(
+    (props) => (
+      <TabBar
+        {...props}
+        indicatorStyle={{ backgroundColor: colors.primary }}
+        style={{ backgroundColor: colors.background }}
+        labelStyle={{ color: colors.text }}
+        activeColor={colors.primary}
+        inactiveColor={colors.textSecondary}
+      />
+    ),
+    []
   );
 
   return (
