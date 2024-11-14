@@ -74,7 +74,28 @@ export default function BookmarksScreen() {
           accessible={true}
           accessibilityLabel={`${item.movieTitle} poster`}
         />
-        <Text style={styles.title}>{item.movieTitle}</Text>
+        <View style={styles.movieInfo}>
+          <Text style={styles.title} numberOfLines={2}>
+            {item.movieTitle}
+          </Text>
+          <View style={styles.metadataContainer}>
+            {item.director && (
+              <Text style={styles.directorText} numberOfLines={1}>
+                Dir: {item.director}
+              </Text>
+            )}
+            {item.releaseDate && (
+              <Text style={styles.yearText}>
+                {new Date(item.releaseDate).getFullYear()}
+              </Text>
+            )}
+          </View>
+          {item.genres && (
+            <Text style={styles.genreText} numberOfLines={1}>
+              {item.genres}
+            </Text>
+          )}
+        </View>
       </TouchableOpacity>
     ),
     []
@@ -156,66 +177,136 @@ export default function BookmarksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    padding: spacing.lg,
     backgroundColor: colors.background,
   },
   listContainer: {
-    padding: spacing.sm,
-    backgroundColor: colors.background,
+    padding: spacing.lg,
+    paddingBottom: spacing.xl * 2,
   },
   movieItem: {
     flexDirection: "row",
+    backgroundColor: colors.surface,
     marginBottom: spacing.md,
+    borderRadius: 12,
+    padding: spacing.md,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2.5,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: `${colors.border}80`,
   },
   poster: {
-    width: 80,
-    height: 120,
+    width: 60,
+    height: 90,
     borderRadius: 8,
     backgroundColor: colors.border,
     marginRight: spacing.md,
   },
+  movieInfo: {
+    flex: 1,
+    justifyContent: "center",
+    height: 90,
+    paddingVertical: spacing.xs,
+  },
   title: {
     fontSize: 16,
+    fontWeight: "600",
     color: colors.text,
-    flexShrink: 1,
+    marginBottom: spacing.xs,
+    lineHeight: 20,
   },
   centerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: spacing.xl,
+    backgroundColor: colors.background,
   },
   errorText: {
     color: colors.error,
-    marginBottom: spacing.md,
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: spacing.lg,
   },
   retryButton: {
     backgroundColor: colors.primary,
-    padding: spacing.md,
-    borderRadius: 8,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: 25,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   retryText: {
     color: colors.background,
     fontSize: 16,
+    fontWeight: "600",
   },
   emptyStateTitle: {
-    color: colors.textSecondary,
+    color: colors.text,
     fontSize: 24,
+    fontWeight: "bold",
+    marginTop: spacing.lg,
     marginBottom: spacing.md,
+    textAlign: "center",
   },
   emptyStateText: {
-    color: colors.text,
+    color: colors.textSecondary,
     fontSize: 16,
     textAlign: "center",
+    marginBottom: spacing.xl,
+    lineHeight: 22,
   },
   signInButton: {
     backgroundColor: colors.primary,
-    padding: spacing.md,
-    borderRadius: 8,
+    paddingHorizontal: spacing.xl * 2,
+    paddingVertical: spacing.md,
+    borderRadius: 25,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   signInButtonText: {
     color: colors.background,
     fontSize: 16,
+    fontWeight: "600",
+  },
+  metadataContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  directorText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  yearText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  genreText: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    opacity: 0.8,
   },
 });
