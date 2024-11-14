@@ -4,6 +4,9 @@ import { colors, spacing } from '../styles/globalStyles';
 import { getImageUrl } from '../api/tmdbApi';
 
 export default function MovieCard({ movie, onPress }) {
+  const title = movie.title || movie.name;
+  const releaseDate = movie.release_date || movie.first_air_date;
+  
   return (
     <TouchableOpacity onPress={onPress} style={styles.container}>
       <Image
@@ -12,7 +15,7 @@ export default function MovieCard({ movie, onPress }) {
       />
       <View style={styles.info}>
         <Text numberOfLines={2} style={styles.title}>
-          {movie.title}
+          {title}
         </Text>
         <View style={styles.ratingContainer}>
           <Text style={styles.rating}>★ {movie.vote_average.toFixed(1)}</Text>
