@@ -1,30 +1,63 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Dimensions, StyleSheet } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, TextInput, Dimensions, StyleSheet, Keyboard } from 'react-native';
 import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 import { colors, spacing } from '../styles/globalStyles';
+import { searchMoviesAndTVShows } from '../api/tmdbApi';
 import Movies from '../components/Movies';
+import TVShows from '../components/TVShows';
+import SearchResults from '../components/SearchResults';
+import { useNavigation } from '@react-navigation/native';
+import debounce from 'lodash/debounce';
 
-const TVShowsTab = () => (
-  <View style={styles.tabContent}>
-    <Text>TV Shows Content</Text>
-  </View>
-);
+const SEARCH_DELAY = 500; // 500ms delay
 
 const MoviesTab = ({ navigation }) => (
   <Movies navigation={navigation} />
 );
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState({ movies: [], tvShows: [] });
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     { key: 'movies', title: 'Movies' },
     { key: 'tvshows', title: 'TV Shows' },
   ]);
 
+  const performSearch = useCallback(
+    debounce(async (query) => {
+      if (query.length >= 2) {
+        const results = await searchMoviesAndTVShows(query);
+        setSearchResults(results);
+      } else {
+        setSearchResults({ movies: [], tvShows: [] });
+      }
+    }, SEARCH_DELAY),
+    []
+  );
+
+  const handleSearchChange = (text) => {
+    setSearchQuery(text);
+    performSearch(text);
+  };
+
+  const handleMoviePress = (movie) => {
+    Keyboard.dismiss();
+    setIsSearchFocused(false);
+    navigation.navigate('MovieDetail', { movieId: movie.id });
+  };
+
+  const handleTVShowPress = (show) => {
+    Keyboard.dismiss();
+    setIsSearchFocused(false);
+    navigation.navigate('TVShowDetail', { showId: show.id });
+  };
+
   const renderScene = SceneMap({
-    movies: MoviesTab,
-    tvshows: TVShowsTab,
+    movies: Movies,
+    tvshows: TVShows,
   });
 
   const renderTabBar = props => (
@@ -45,18 +78,30 @@ export default function HomeScreen() {
           style={styles.searchInput}
           placeholder="Search movies or TV shows..."
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={handleSearchChange}
+          onFocus={() => setIsSearchFocused(true)}
         />
       </View>
 
-      <TabView
-        navigationState={{ index, routes }}
-        renderScene={renderScene}
-        onIndexChange={setIndex}
-        initialLayout={{ width: Dimensions.get('window').width }}
-        renderTabBar={renderTabBar}
-        style={styles.tabView}
-      />
+      {isSearchFocused && searchQuery.length >= 2 ? (
+        <View style={styles.searchResults}>
+          <SearchResults
+            movies={searchResults.movies}
+            tvShows={searchResults.tvShows}
+            onMoviePress={handleMoviePress}
+            onTVShowPress={handleTVShowPress}
+          />
+        </View>
+      ) : (
+        <TabView
+          navigationState={{ index, routes }}
+          renderScene={renderScene}
+          onIndexChange={setIndex}
+          initialLayout={{ width: Dimensions.get('window').width }}
+          renderTabBar={renderTabBar}
+          style={styles.tabView}
+        />
+      )}
     </View>
   );
 }
@@ -92,5 +137,9 @@ const styles = StyleSheet.create({
   },
   tabContent: {
     flex: 1,
+  },
+  searchResults: {
+    flex: 1,
+    backgroundColor: colors.background,
   },
 });

@@ -26,7 +26,7 @@ export default function MovieDetailScreen({ route }) {
   const fetchMovieDetails = async () => {
     try {
       const response = await fetch(
-        `https://api.themoviedb.org/3/movie/${movieId}?api_key=a80f392256d3c7c3005432ab07b19299&language=en-US`
+        `https://api.themoviedb.org/3/movie/${movieId}?api_key=a80f392256d3c7c3005432ab07b19299&language=en-US&append_to_response=credits`
       );
       const data = await response.json();
       setMovie(data);
@@ -91,10 +91,73 @@ export default function MovieDetailScreen({ route }) {
               </View>
             ))}
           </View>
-
-          <View style={styles.overview}>
-            <Text style={styles.overviewTitle}>Overview</Text>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Overview</Text>
             <Text style={styles.overviewText}>{movie.overview}</Text>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Cast</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {movie.credits?.cast?.slice(0, 10).map(actor => (
+                <View key={actor.id} style={styles.castMember}>
+                  <Image
+                    source={{ uri: getImageUrl(actor.profile_path) }}
+                    style={styles.castImage}
+                  />
+                  <Text style={styles.castName} numberOfLines={2}>
+                    {actor.name}
+                  </Text>
+                  <Text style={styles.characterName} numberOfLines={1}>
+                    {actor.character}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          <View style={styles.infoSection}>
+            <Text style={styles.sectionTitle}>Movie Info</Text>
+            
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Director</Text>
+              <Text style={styles.infoValue}>
+                {movie.credits?.crew?.find(person => person.job === 'Director')?.name || 'N/A'}
+              </Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Budget</Text>
+              <Text style={styles.infoValue}>
+                ${(movie.budget / 1000000).toFixed(1)}M
+              </Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Revenue</Text>
+              <Text style={styles.infoValue}>
+                ${(movie.revenue / 1000000).toFixed(1)}M
+              </Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Status</Text>
+              <Text style={styles.infoValue}>{movie.status}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Production</Text>
+              <Text style={styles.infoValue}>
+                {movie.production_companies?.map(company => company.name).join(', ')}
+              </Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Countries</Text>
+              <Text style={styles.infoValue}>
+                {movie.production_countries?.map(country => country.name).join(', ')}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -215,5 +278,61 @@ const styles = StyleSheet.create({
   overviewText: {
     color: colors.textSecondary,
     lineHeight: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  castSection: {
+    marginTop: spacing.lg,
+  },
+  castMember: {
+    width: 100,
+    marginRight: spacing.md,
+  },
+  castImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.border,
+    marginBottom: spacing.xs,
+  },
+  castName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    textAlign: 'center',
+  },
+  characterName: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  infoSection: {
+    marginTop: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    flex: 1,
+  },
+  infoValue: {
+    fontSize: 14,
+    color: colors.text,
+    flex: 2,
+    textAlign: 'right',
+  },
+  section: {
+    marginTop: spacing.lg,
   },
 });

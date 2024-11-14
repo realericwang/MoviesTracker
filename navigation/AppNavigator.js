@@ -9,6 +9,8 @@ import FootprintScreen from '../screens/FootprintScreen';
 import AccountScreen from '../screens/AccountScreen';
 import MovieDetailScreen from '../screens/MovieDetailScreen';
 
+import TVShowDetailScreen from '../screens/TVShowDetailScreen';
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -61,6 +63,17 @@ export function AppNavigator() {
           title: '',
         }}
       />
+      <Stack.Screen 
+        name="TVShowDetail" 
+        component={TVShowDetailScreen}
+        options={{ 
+          headerTransparent: true,
+          headerTintColor: '#fff',
+          headerBackTitle: ' ',
+          title: '',
+        }}
+      />
+
     </Stack.Navigator>
   );
 }

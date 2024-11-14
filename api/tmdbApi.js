@@ -56,3 +56,77 @@ export const fetchMovieDetails = async (movieId) => {
     return null;
   }
 };
+
+export const fetchPopularTVShows = async () => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/tv/popular?api_key=${API_KEY}&language=en-US&page=1`
+    );
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error('Error fetching popular TV shows:', error);
+    return [];
+  }
+};
+
+export const fetchTopRatedTVShows = async () => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/tv/top_rated?api_key=${API_KEY}&language=en-US&page=1`
+    );
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error('Error fetching top rated TV shows:', error);
+    return [];
+  }
+};
+
+export const fetchOnTheAirTVShows = async () => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/tv/on_the_air?api_key=${API_KEY}&language=en-US&page=1`
+    );
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error('Error fetching on the air TV shows:', error);
+    return [];
+  }
+};
+
+export const fetchTVShowDetails = async (showId) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/tv/${showId}?api_key=${API_KEY}&language=en-US&append_to_response=credits`
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching TV show details:', error);
+    throw error;
+  }
+};
+
+export const searchMoviesAndTVShows = async (query) => {
+  if (!query) return { movies: [], tvShows: [] };
+  
+  try {
+    const [movieResponse, tvResponse] = await Promise.all([
+      fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1`),
+      fetch(`${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1`)
+    ]);
+    
+    const movieData = await movieResponse.json();
+    const tvData = await tvResponse.json();
+    
+    return {
+      movies: movieData.results || [],
+      tvShows: tvData.results || []
+    };
+  } catch (error) {
+    console.error('Error searching:', error);
+    return { movies: [], tvShows: [] };
+  }
+};
