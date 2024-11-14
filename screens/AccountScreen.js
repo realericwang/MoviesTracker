@@ -122,10 +122,18 @@ const AccountScreen = () => {
           />
         </View>
         <View style={styles.profileSection}>
-          <Image
-            source={{ uri: user.photoURL || "https://via.placeholder.com/100" }}
-            style={styles.profileImage}
-          />
+          {user.photoURL ? (
+            <Image
+              source={{ uri: user.photoURL }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <View style={[styles.profileImage, styles.profileImagePlaceholder]}>
+              <Text style={styles.profileImagePlaceholderText}>
+                {(user.displayName || user.email || "U")[0].toUpperCase()}
+              </Text>
+            </View>
+          )}
           <View style={styles.profileInfo}>
             <Text style={styles.name}>{user.displayName || "User"}</Text>
             <Text style={styles.email}>{user.email}</Text>
@@ -319,6 +327,16 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
     opacity: 0.1,
+  },
+  profileImagePlaceholder: {
+    backgroundColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  profileImagePlaceholderText: {
+    fontSize: 36,
+    fontWeight: "bold",
+    color: colors.background,
   },
 });
 
