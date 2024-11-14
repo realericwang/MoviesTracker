@@ -4,8 +4,10 @@ import { fetchPopularMovies, fetchUpcomingMovies, fetchTopRatedMovies } from '..
 import BannerRotator from './BannerRotator';
 import MovieCategory from './MovieCategory';
 import MovieCard from './MovieCard';
+import { useNavigation } from '@react-navigation/native';
 
 export default function Movies() {
+  const navigation = useNavigation();
   const [popularMovies, setPopularMovies] = useState([]);
   const [upcomingMovies, setUpcomingMovies] = useState([]);
   const [topRatedMovies, setTopRatedMovies] = useState([]);
@@ -25,8 +27,7 @@ export default function Movies() {
   }, []);
 
   const handleMoviePress = (movie) => {
-    // TODO: Navigate to movie detail screen
-    console.log('Movie pressed:', movie.title);
+    navigation.navigate('MovieDetail', { movieId: movie.id });
   };
 
   return (

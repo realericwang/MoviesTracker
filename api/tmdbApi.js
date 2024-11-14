@@ -43,3 +43,16 @@ export const fetchTopRatedMovies = async () => {
 export const getImageUrl = (path) => {
   return `https://image.tmdb.org/t/p/w500${path}`;
 };
+
+export const fetchMovieDetails = async (movieId) => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&language=en-US`
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching movie details:', error);
+    return null;
+  }
+};

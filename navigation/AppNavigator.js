@@ -1,4 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../styles/globalStyles';
 
@@ -6,10 +7,12 @@ import HomeScreen from '../screens/HomeScreen';
 import BookmarksScreen from '../screens/BookmarksScreen';
 import FootprintScreen from '../screens/FootprintScreen';
 import AccountScreen from '../screens/AccountScreen';
+import MovieDetailScreen from '../screens/MovieDetailScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
-export function AppNavigator() {
+function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -30,7 +33,6 @@ export function AppNavigator() {
         },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
-        headerShown: true,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -38,5 +40,27 @@ export function AppNavigator() {
       <Tab.Screen name="Footprint" component={FootprintScreen} />
       <Tab.Screen name="Account" component={AccountScreen} />
     </Tab.Navigator>
+  );
+}
+
+export function AppNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen 
+        name="MainTabs" 
+        component={TabNavigator} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="MovieDetail" 
+        component={MovieDetailScreen}
+        options={{ 
+          headerTransparent: true,
+          headerTintColor: '#fff',
+          headerBackTitle: ' ',
+          title: '',
+        }}
+      />
+    </Stack.Navigator>
   );
 }

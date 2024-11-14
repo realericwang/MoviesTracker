@@ -10,6 +10,10 @@ const TVShowsTab = () => (
   </View>
 );
 
+const MoviesTab = ({ navigation }) => (
+  <Movies navigation={navigation} />
+);
+
 export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [index, setIndex] = useState(0);
@@ -19,7 +23,7 @@ export default function HomeScreen() {
   ]);
 
   const renderScene = SceneMap({
-    movies: Movies,
+    movies: MoviesTab,
     tvshows: TVShowsTab,
   });
 
