@@ -33,6 +33,8 @@ const SignUpScreen = ({ navigation }) => {
       const { user, error } = await signUp(email, password);
       if (error) {
         Alert.alert("Error", error);
+      } else {
+        navigation.navigate("Account");
       }
     } catch (error) {
       Alert.alert("Error", "An unexpected error occurred");
