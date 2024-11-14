@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../styles/globalStyles";
@@ -104,9 +105,19 @@ export default function MovieDetailScreen({ route }) {
   };
   const handleBookmarkPress = async () => {
     if (!user) {
-      navigation.navigate("Auth");
+      Alert.alert("Login Required", "You need to login to bookmark movies", [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Login",
+          onPress: () => navigation.navigate("Auth"),
+        },
+      ]);
       return;
     }
+
     try {
       if (isBookmarked) {
         await deleteFromDB(bookmarksID, "bookmarks");
