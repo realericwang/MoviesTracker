@@ -10,10 +10,14 @@ import {
   Modal,
   TextInput,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../styles/globalStyles";
-import { getImageUrl, fetchMovieDetails } from "../api/tmdbApi";
+import {
+  getImageUrl,
+  fetchMovieDetails as fetchMovieFromAPI,
+} from "../api/tmdbApi";
 import { useNavigation } from "@react-navigation/native";
 import { auth } from "../firebase/firebaseSetup";
 import {
@@ -40,6 +44,8 @@ export default function MovieDetailScreen({ route }) {
   const [reviewText, setReviewText] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const user = auth.currentUser;
+
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchReviews = async () => {
     try {
@@ -198,8 +204,19 @@ export default function MovieDetailScreen({ route }) {
     }
   };
 
+  const loadMovieDetails = async () => {
+    try {
+      const movieData = await fetchMovieFromAPI(movieId);
+      setMovie(movieData);
+    } catch (error) {
+      console.error("Error fetching movie details:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchMovieDetails();
+    loadMovieDetails();
     fetchReviews();
     checkIfBookmarked();
   }, [movieId]);
@@ -210,8 +227,12 @@ export default function MovieDetailScreen({ route }) {
     }
   }, [isModalVisible]);
 
-  if (!movie) {
-    return null;
+  if (isLoading || !movie) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
   }
 
   return (
@@ -344,7 +365,7 @@ export default function MovieDetailScreen({ route }) {
             </View>
           </View>
         </View>
-        <View style={styles.section}>
+        <View style={styles.reviewsSection}>
           <Text style={styles.sectionTitle}>Reviews</Text>
           {reviews.length === 0 ? (
             <Text style={styles.noReviewsText}>No reviews yet.</Text>
@@ -450,14 +471,23 @@ const styles = StyleSheet.create({
     width: width,
     height: width * 0.56,
     position: "absolute",
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 5,
   },
   content: {
     marginTop: width * 0.4,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
     backgroundColor: colors.background,
     minHeight: 1000,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 5,
   },
   posterContainer: {
     marginTop: -80,
@@ -469,8 +499,13 @@ const styles = StyleSheet.create({
   poster: {
     width: 140,
     height: 210,
-    borderRadius: 8,
+    borderRadius: 12,
     backgroundColor: colors.border,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
   },
   actions: {
     flexDirection: "row",
@@ -490,13 +525,17 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   details: {
-    padding: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 26,
+    fontWeight: "800",
     color: colors.text,
     marginBottom: spacing.sm,
+    textShadowColor: "rgba(0, 0, 0, 0.2)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   metadata: {
     flexDirection: "row",
@@ -529,9 +568,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: 16,
+    borderRadius: 20,
     marginRight: spacing.xs,
     marginBottom: spacing.xs,
+    borderWidth: 1,
+    borderColor: `${colors.primary}30`,
   },
   genreText: {
     color: colors.textSecondary,
@@ -549,6 +590,7 @@ const styles = StyleSheet.create({
   overviewText: {
     color: colors.textSecondary,
     lineHeight: 24,
+    marginTop: spacing.xs,
   },
   sectionTitle: {
     fontSize: 18,
@@ -562,6 +604,7 @@ const styles = StyleSheet.create({
   castMember: {
     width: 100,
     marginRight: spacing.md,
+    marginTop: spacing.xs,
   },
   castImage: {
     width: 80,
@@ -569,6 +612,13 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     backgroundColor: colors.border,
     marginBottom: spacing.xs,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
   },
   castName: {
     fontSize: 14,
@@ -617,7 +667,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 5,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
   },
   modalContainer: {
     flex: 1,
@@ -627,8 +681,15 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: colors.background,
-    borderRadius: 8,
+    borderRadius: 16,
     padding: spacing.lg,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: `${colors.primary}20`,
   },
   modalTitle: {
     fontSize: 20,
@@ -666,23 +727,47 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: "center",
     marginTop: spacing.md,
+    fontSize: 14,
+    fontStyle: "italic",
+    opacity: 0.8,
   },
   reviewContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    paddingVertical: spacing.md,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: `${colors.primary}15`,
   },
   reviewUser: {
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "700",
     color: colors.text,
+    marginBottom: 2,
   },
   reviewTimestamp: {
     color: colors.textSecondary,
     fontSize: 12,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
+    fontWeight: "500",
   },
   reviewText: {
     color: colors.text,
-    lineHeight: 20,
+    lineHeight: 22,
+    fontSize: 14,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  reviewsSection: {
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
 });
