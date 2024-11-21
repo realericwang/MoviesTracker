@@ -41,7 +41,7 @@ import {
       let newArray = [];
       if (!querySnapshot.empty) {
         querySnapshot.forEach((docSnapshot) => {
-          newArray.push(docSnapshot.data());
+          newArray.push({ id: docSnapshot.id, ...docSnapshot.data() });
         });
         console.log("array from readDocs", newArray);
       }
