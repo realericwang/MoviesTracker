@@ -1,22 +1,20 @@
 import {useEffect, useState} from "react";
 import MapView, {Marker} from "react-native-maps";
-import {StyleSheet} from "react-native";
+import {StyleSheet, View, Text} from "react-native";
 import Favicon from "../assets/favicon.png";
 import {fetchPopularMovies, getImageUrl} from "../api/tmdbApi";
 import {getAllDocs} from "../firebase/firestoreHelper";
+import {Image as RNImage} from 'react-native';
+import CountryCoordinates from "./common/CountryCoordinates";
 
-// Hardcoded coordinates for certain countries
-const countryCoordinates = {
-    "Canada": {latitude: 56.1304, longitude: -106.3468},
-    "United States of America": {latitude: 37.0902, longitude: -95.7129},
-    "United Kingdom": {latitude: 55.3781, longitude: -3.4360},
-    "France": {latitude: 46.6034, longitude: 1.8883},
-    // Add more countries as needed
-};
 
 const Map = () => {
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
+    // New state for counters
+    // New state for country movie counts
+    const [countryMovieCounts, setCountryMovieCounts] = useState({});
+
 
     useEffect(() => {
         // Function to load bookmarked movies from Firebase
@@ -25,6 +23,16 @@ const Map = () => {
                 // Fetch all bookmarked movies from Firestore
                 const movies = await getAllDocs("bookmarks");
                 setBookmarkedMovies(movies);
+                // Count movies per country
+                const movieCountsByCountry = movies.reduce((counts, movie) => {
+                    const country = movie.productionCountries;
+                    if (country) {
+                        counts[country] = (counts[country] || 0) + 1;
+                    }
+                    return counts;
+                }, {});
+
+                setCountryMovieCounts(movieCountsByCountry);
             } catch (error) {
                 console.error("Error fetching bookmarked movies:", error);
             }
@@ -54,10 +62,11 @@ const Map = () => {
             >
                 {bookmarkedMovies.length > 0 &&
                     bookmarkedMovies
-                        .filter((movie) => countryCoordinates[movie.productionCountries]) // Filter out movies without valid country mapping
+                        .filter((movie) => CountryCoordinates[movie.productionCountries]) // Filter out movies without valid country mapping
                         .map((movie, index) => {
                             const country = movie.productionCountries;
-                            const coordinates = countryCoordinates[country];
+                            const coordinates = CountryCoordinates[country];
+                            const movieCount = countryMovieCounts[country] || 0;
 
                             return (
                                 <Marker
@@ -66,10 +75,22 @@ const Map = () => {
                                         latitude: coordinates.latitude,
                                         longitude: coordinates.longitude,
                                     }}
-                                    image={{uri: getImageUrl(movie.posterPath)}}
                                     title={movie.movieTitle}
                                     description={`${movie.genres} - Directed by ${movie.director}`}
-                                />
+                                >
+                                    <View style={styles.markerContainer}>
+                                        <RNImage
+                                            source={{uri: getImageUrl(movie.posterPath)}}
+                                            style={styles.poster}
+                                        />
+                                       <View style={[styles.countryName, { backgroundColor: CountryCoordinates[country]?.color || 'black' }]}>
+                                            <Text >{country}</Text>
+                                        </View>
+                                        <View style={styles.countBadge}>
+                                            <Text style={styles.countText}>{movieCount}</Text>
+                                        </View>
+                                    </View>
+                                </Marker>
                             );
                         })}
             </MapView>
@@ -83,5 +104,35 @@ export default Map;
 const styles = StyleSheet.create({
     map: {
         flex: 1,
+    },
+    markerContainer: {
+        position: 'relative',
+    },
+    poster: {
+        width: 100,
+        height: 150,
+        borderRadius: 15,
+    },
+    countBadge: {
+        position: 'absolute',
+        top: -10,
+        right: -10,
+        backgroundColor: 'red',
+        borderRadius: 15,
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    countText: {
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    countryName: {
+        backgroundColor: 'yellow',
+        padding: 5,
+        borderRadius: 5,
+        position: 'absolute',
+        top: -20,
     },
 });
