@@ -171,11 +171,26 @@ export default function MovieDetailScreen({route}) {
                         const data = {
                             movieId,
                             userId: user.uid,
+                            userName: user.displayName || "Anonymous",
                             movieTitle: movie.title,
                             posterPath: movie.poster_path,
+                            backdropPath: movie.backdrop_path,
                             releaseDate: movie.release_date,
                             genres: movie.genres?.map(g => g.name).join(', '),
+                            runtime: movie.runtime,
+                            voteAverage: movie.vote_average,
+                            overview: movie.overview,
                             director: movie.credits?.crew?.find(person => person.job === "Director")?.name || "Unknown",
+                            cast: movie.credits?.cast?.slice(0, 10).map(actor => ({
+                                id: actor.id,
+                                name: actor.name,
+                                character: actor.character,
+                                profilePath: actor.profile_path,
+                            })),
+                            budget: movie.budget,
+                            revenue: movie.revenue,
+                            status: movie.status,
+                            productionCompanies: movie.production_companies?.map(company => company.name).join(', ') || "Unknown",
                             productionCountries: movie.production_countries?.map(c => c.iso_3166_1).join(', ') || "Unknown",
                             timestamp: Date.now(),
                         };
@@ -296,13 +311,12 @@ export default function MovieDetailScreen({route}) {
                             <View style={styles.rating}>
                                 <Ionicons name="star" size={16} color="#FFD700"/>
                                 <Text style={styles.ratingText}>
-                                    {movie.vote_average.toFixed(1)}
+                                    {(movie.vote_average ?? 0).toFixed(1)}
                                 </Text>
                             </View>
                         </View>
-
                         <View style={styles.genres}>
-                            {movie.genres.map((genre) => (
+                            {(movie.genres || []).map((genre) => (
                                 <View key={genre.id} style={styles.genreTag}>
                                     <Text style={styles.genreText}>{genre.name}</Text>
                                 </View>
@@ -317,7 +331,7 @@ export default function MovieDetailScreen({route}) {
                         <View style={styles.section}>
                             <Text style={styles.sectionTitle}>Cast</Text>
                             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                {movie.credits?.cast?.slice(0, 10).map((actor) => (
+                                {(movie.credits?.cast || []).slice(0, 10).map((actor) => (
                                     <View key={actor.id} style={styles.castMember}>
                                         <Image
                                             source={{uri: getImageUrl(actor.profile_path)}}

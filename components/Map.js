@@ -8,7 +8,8 @@ import {Image as RNImage} from 'react-native';
 import CountryCoordinates from "./common/CountryCoordinates";
 
 
-const Map = () => {
+
+const Map = ({navigation}) => {
     const [selectedLocation, setSelectedLocation] = useState(null);
     const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
     // New state for counters
@@ -40,6 +41,17 @@ const Map = () => {
 
         loadBookmarkedMovies(); // Load bookmarked movies when the component mounts
     }, []);
+
+
+    // Function to handle marker press
+    const handleMarkerPress = (movie) => {
+        if (movie.id) {
+            console.log("Navigating to MovieDetail for movie:", movie);
+            navigation.navigate("MovieDetail", { movieId: movie.id });
+        } else {
+            console.error("Movie ID is undefined. Cannot navigate to MovieDetail.");
+        }
+    };
 
     return (
         <>
@@ -76,15 +88,18 @@ const Map = () => {
                                         longitude: coordinates.longitude,
                                     }}
                                     title={movie.movieTitle}
-                                    description={`${movie.genres} - Directed by ${movie.director}`}
+                                    description={` ${movie.genres} - Directed by ${movie.director}`}
+                                    onPress={() => handleMarkerPress(movie)} // Navigate to movie detail on press
                                 >
+                                    >
                                     <View style={styles.markerContainer}>
                                         <RNImage
                                             source={{uri: getImageUrl(movie.posterPath)}}
                                             style={styles.poster}
                                         />
-                                       <View style={[styles.countryName, { backgroundColor: CountryCoordinates[country]?.color || 'black' }]}>
-                                            <Text >{country}</Text>
+                                        <View
+                                            style={[styles.countryName, {backgroundColor: CountryCoordinates[country]?.color || 'black'}]}>
+                                            <Text>{country}</Text>
                                         </View>
                                         <View style={styles.countBadge}>
                                             <Text style={styles.countText}>{movieCount}</Text>
@@ -133,6 +148,7 @@ const styles = StyleSheet.create({
         padding: 5,
         borderRadius: 5,
         position: 'absolute',
-        top: -20,
+        left: -15,
+        top: 5,
     },
 });

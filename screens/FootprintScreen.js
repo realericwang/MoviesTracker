@@ -1,7 +1,7 @@
 import {View, Text, StyleSheet} from "react-native";
 import {useState} from "react";
 import Map from "../components/Map";
-
+import {useNavigation} from "@react-navigation/native";
 /**
  * FootprintScreen Component
  *
@@ -13,10 +13,11 @@ import Map from "../components/Map";
  * @returns {React.Element} The rendered FootprintScreen component.
  */
 export default function FootprintScreen() {
+    const navigation = useNavigation();
     return (
         <View style={styles.container}>
             <Text>Footprint Screen</Text>
-            <Map/>
+            <Map navigation={navigation}/>
         </View>
     );
 }
