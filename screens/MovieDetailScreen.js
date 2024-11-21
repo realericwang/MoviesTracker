@@ -167,7 +167,6 @@ export default function MovieDetailScreen({ route }) {
             [where("movieId", "==", movieId), where("userId", "==", user.uid)],
             true
           );
-
           if (!existingBookmark) {
             const data = {
               movieId,
@@ -177,8 +176,10 @@ export default function MovieDetailScreen({ route }) {
               releaseDate: movie.release_date,
               genres: movie.genres?.map(g => g.name).join(', '),
               director: movie.credits?.crew?.find(person => person.job === "Director")?.name || "Unknown",
+              productionCountries: movie.production_countries?.map(c => c.name).join(', ') || "Unknown",
               timestamp: Date.now(),
             };
+
             await writeToDB(data, "bookmarks");
 
             // Get the new bookmark ID
