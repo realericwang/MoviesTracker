@@ -16,7 +16,6 @@ export default function FootprintScreen() {
     const navigation = useNavigation();
     return (
         <View style={styles.container}>
-            <Text>Footprint Screen</Text>
             <Map navigation={navigation}/>
         </View>
     );
