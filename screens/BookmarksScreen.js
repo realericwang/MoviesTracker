@@ -43,7 +43,6 @@ export default function BookmarksScreen() {
   const navigation = useNavigation();
   const [user, setUser] = useState(auth.currentUser);
 
-
   /**
    * Fetches bookmarked movies from Firestore based on the authenticated user.
    * Sets the `bookmarkedMovies` state with the fetched data.

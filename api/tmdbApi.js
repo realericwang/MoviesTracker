@@ -6,14 +6,16 @@ const BASE_URL = "https://api.themoviedb.org/3";
  * @returns {Promise<Array>} Array of popular movie objects
  */
 export const fetchPopularMovies = async () => {
-    try {
-        const response = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=1`);
-        const data = await response.json();
-        return data.results;
-    } catch (error) {
-        console.error("Error fetching popular movies:", error);
-        return [];
-    }
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=1`
+    );
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error("Error fetching popular movies:", error);
+    return [];
+  }
 };
 
 /**
@@ -21,14 +23,16 @@ export const fetchPopularMovies = async () => {
  * @returns {Promise<Array>} Array of upcoming movie objects
  */
 export const fetchUpcomingMovies = async () => {
-    try {
-        const response = await fetch(`${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`);
-        const data = await response.json();
-        return data.results;
-    } catch (error) {
-        console.error("Error fetching upcoming movies:", error);
-        return [];
-    }
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/upcoming?api_key=${API_KEY}&language=en-US&page=1`
+    );
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error("Error fetching upcoming movies:", error);
+    return [];
+  }
 };
 
 /**
@@ -36,14 +40,16 @@ export const fetchUpcomingMovies = async () => {
  * @returns {Promise<Array>} Array of top rated movie objects
  */
 export const fetchTopRatedMovies = async () => {
-    try {
-        const response = await fetch(`${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=en-US&page=1`);
-        const data = await response.json();
-        return data.results;
-    } catch (error) {
-        console.error("Error fetching top rated movies:", error);
-        return [];
-    }
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/top_rated?api_key=${API_KEY}&language=en-US&page=1`
+    );
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error("Error fetching top rated movies:", error);
+    return [];
+  }
 };
 
 /**
@@ -52,7 +58,7 @@ export const fetchTopRatedMovies = async () => {
  * @returns {string} Complete image URL
  */
 export const getImageUrl = (path) => {
-    return `https://image.tmdb.org/t/p/w500${path}`;
+  return `https://image.tmdb.org/t/p/w500${path}`;
 };
 
 /**
@@ -61,14 +67,16 @@ export const getImageUrl = (path) => {
  * @returns {Promise<Object|null>} Movie details object or null if error
  */
 export const fetchMovieDetails = async (movieId) => {
-    try {
-        const response = await fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&language=en-US&append_to_response=credits`);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error("Error fetching movie details:", error);
-        return null;
-    }
+  try {
+    const response = await fetch(
+      `${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&language=en-US&append_to_response=credits`
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching movie details:", error);
+    return null;
+  }
 };
 
 /**
@@ -76,14 +84,16 @@ export const fetchMovieDetails = async (movieId) => {
  * @returns {Promise<Array>} Array of popular TV show objects
  */
 export const fetchPopularTVShows = async () => {
-    try {
-        const response = await fetch(`${BASE_URL}/tv/popular?api_key=${API_KEY}&language=en-US&page=1`);
-        const data = await response.json();
-        return data.results;
-    } catch (error) {
-        console.error("Error fetching popular TV shows:", error);
-        return [];
-    }
+  try {
+    const response = await fetch(
+      `${BASE_URL}/tv/popular?api_key=${API_KEY}&language=en-US&page=1`
+    );
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error("Error fetching popular TV shows:", error);
+    return [];
+  }
 };
 
 /**
@@ -91,14 +101,16 @@ export const fetchPopularTVShows = async () => {
  * @returns {Promise<Array>} Array of top rated TV show objects
  */
 export const fetchTopRatedTVShows = async () => {
-    try {
-        const response = await fetch(`${BASE_URL}/tv/top_rated?api_key=${API_KEY}&language=en-US&page=1`);
-        const data = await response.json();
-        return data.results;
-    } catch (error) {
-        console.error("Error fetching top rated TV shows:", error);
-        return [];
-    }
+  try {
+    const response = await fetch(
+      `${BASE_URL}/tv/top_rated?api_key=${API_KEY}&language=en-US&page=1`
+    );
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error("Error fetching top rated TV shows:", error);
+    return [];
+  }
 };
 
 /**
@@ -106,14 +118,16 @@ export const fetchTopRatedTVShows = async () => {
  * @returns {Promise<Array>} Array of on-air TV show objects
  */
 export const fetchOnTheAirTVShows = async () => {
-    try {
-        const response = await fetch(`${BASE_URL}/tv/on_the_air?api_key=${API_KEY}&language=en-US&page=1`);
-        const data = await response.json();
-        return data.results;
-    } catch (error) {
-        console.error("Error fetching on the air TV shows:", error);
-        return [];
-    }
+  try {
+    const response = await fetch(
+      `${BASE_URL}/tv/on_the_air?api_key=${API_KEY}&language=en-US&page=1`
+    );
+    const data = await response.json();
+    return data.results;
+  } catch (error) {
+    console.error("Error fetching on the air TV shows:", error);
+    return [];
+  }
 };
 
 /**
@@ -123,14 +137,16 @@ export const fetchOnTheAirTVShows = async () => {
  * @throws {Error} If the fetch fails
  */
 export const fetchTVShowDetails = async (showId) => {
-    try {
-        const response = await fetch(`${BASE_URL}/tv/${showId}?api_key=${API_KEY}&language=en-US&append_to_response=credits`);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error("Error fetching TV show details:", error);
-        throw error;
-    }
+  try {
+    const response = await fetch(
+      `${BASE_URL}/tv/${showId}?api_key=${API_KEY}&language=en-US&append_to_response=credits`
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching TV show details:", error);
+    throw error;
+  }
 };
 
 /**
@@ -139,21 +155,33 @@ export const fetchTVShowDetails = async (showId) => {
  * @returns {Promise<Object>} Object containing arrays of matching movies and TV shows
  */
 export const searchMoviesAndTVShows = async (query) => {
-    if (!query) return {movies: [], tvShows: []};
+  if (!query) return { movies: [], tvShows: [] };
 
-    try {
-        const [movieResponse, tvResponse] = await Promise.all([fetch(`${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1`), fetch(`${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1`),]);
+  try {
+    const [movieResponse, tvResponse] = await Promise.all([
+      fetch(
+        `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
+          query
+        )}&page=1`
+      ),
+      fetch(
+        `${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(
+          query
+        )}&page=1`
+      ),
+    ]);
 
-        const movieData = await movieResponse.json();
-        const tvData = await tvResponse.json();
+    const movieData = await movieResponse.json();
+    const tvData = await tvResponse.json();
 
-        return {
-            movies: movieData.results || [], tvShows: tvData.results || [],
-        };
-    } catch (error) {
-        console.error("Error searching:", error);
-        return {movies: [], tvShows: []};
-    }
+    return {
+      movies: movieData.results || [],
+      tvShows: tvData.results || [],
+    };
+  } catch (error) {
+    console.error("Error searching:", error);
+    return { movies: [], tvShows: [] };
+  }
 };
 
 /**
@@ -161,39 +189,45 @@ export const searchMoviesAndTVShows = async (query) => {
  * @returns {Promise<Array>} Array of movie objects from different countries
  */
 export const fetchMoviesByCountry = async () => {
-    const countryCodes = ["US", // North America
-        "JP", // Asia
-        "IN", // Asia
-        "BR", // South America
-        "DE", // Europe
-        "KR", // Asia
-        "IT", // Europe
-        "CA", // North America
-        "AU", // Australia
-        "CN", // Asia (China)
-        "SG", // Asia (Singapore)
-        "NG", // Africa (Nigeria)
-        "ZA", // Africa (South Africa)
-        "EG", // Africa (Egypt)
-        "KE", // Africa (Kenya)
-        "FR", // Europe (France)
-        "GB"  // Europe (United Kingdom)
-    ];
+  const countryCodes = [
+    "US", // North America
+    "JP", // Asia
+    "IN", // Asia
+    "BR", // South America
+    "DE", // Europe
+    "KR", // Asia
+    "IT", // Europe
+    "CA", // North America
+    "AU", // Australia
+    "CN", // Asia (China)
+    "SG", // Asia (Singapore)
+    "NG", // Africa (Nigeria)
+    "ZA", // Africa (South Africa)
+    "EG", // Africa (Egypt)
+    "KE", // Africa (Kenya)
+    "FR", // Europe (France)
+    "GB", // Europe (United Kingdom)
+  ];
 
-    const moviePromises = countryCodes.map(async (countryCode) => {
-        try {
-            // Corrected URL parameters
-            const response = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&` + `language=en-US&` + `with_origin_country=${countryCode}&` + // Changed from 'country'
-                `with_original_language=en&` + `page=1`);
+  const moviePromises = countryCodes.map(async (countryCode) => {
+    try {
+      // Corrected URL parameters
+      const response = await fetch(
+        `${BASE_URL}/discover/movie?api_key=${API_KEY}&` +
+          `language=en-US&` +
+          `with_origin_country=${countryCode}&` + // Changed from 'country'
+          `with_original_language=en&` +
+          `page=1`
+      );
 
-            const data = await response.json();
-            return data.results.slice(0, 1);
-        } catch (error) {
-            console.error(`Error fetching movies for country ${countryCode}:`, error);
-            return [];
-        }
-    });
+      const data = await response.json();
+      return data.results.slice(0, 1);
+    } catch (error) {
+      console.error(`Error fetching movies for country ${countryCode}:`, error);
+      return [];
+    }
+  });
 
-    const movies = await Promise.all(moviePromises);
-    return movies.flat();
+  const movies = await Promise.all(moviePromises);
+  return movies.flat();
 };

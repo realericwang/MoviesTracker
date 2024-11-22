@@ -43,13 +43,16 @@ export const login = async (email, password) => {
         errorMessage = "Invalid email or password. Please try again.";
         break;
       case "auth/invalid-email":
-        errorMessage = "The email address is not valid. Please enter a valid email.";
+        errorMessage =
+          "The email address is not valid. Please enter a valid email.";
         break;
       case "auth/too-many-requests":
-        errorMessage = "Too many unsuccessful login attempts. Please try again later or reset your password.";
+        errorMessage =
+          "Too many unsuccessful login attempts. Please try again later or reset your password.";
         break;
       case "auth/network-request-failed":
-        errorMessage = "Network error. Please check your internet connection and try again.";
+        errorMessage =
+          "Network error. Please check your internet connection and try again.";
         break;
       default:
         errorMessage = "An unexpected error occurred. Please try again.";
@@ -58,7 +61,7 @@ export const login = async (email, password) => {
 
     return { user: null, error: errorMessage };
   }
-}
+};
 
 export const logout = async () => {
   try {
