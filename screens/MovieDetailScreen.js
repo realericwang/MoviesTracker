@@ -197,9 +197,7 @@ export default function MovieDetailScreen({ route }) {
                   ?.map((company) => company.name)
                   .join(", ") || "Unknown",
               productionCountries:
-                movie.production_countries
-                  ?.map((c) => c.iso_3166_1)
-                  .join(", ") || "Unknown",
+                movie.production_countries?.[0]?.iso_3166_1 || "Unknown",
               timestamp: Date.now(),
             };
 
