@@ -6,47 +6,52 @@ import { fetchPopularMovies, getImageUrl } from "../api/tmdbApi";
 import { getAllDocs } from "../firebase/firestoreHelper";
 import { Image as RNImage } from "react-native";
 import CountryCoordinates from "./common/CountryCoordinates";
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 const Map = ({ navigation }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
   const [countryMovieCounts, setCountryMovieCounts] = useState({});
   const [moviesByCountry, setMoviesByCountry] = useState({});
+  const [refresh, setRefresh] = useState(0);
 
-  useEffect(() => {
-    const loadBookmarkedMovies = async () => {
-      try {
-        const movies = await getAllDocs("bookmarks");
-        setBookmarkedMovies(movies);
+  useFocusEffect(
+    useCallback(() => {
+      const loadBookmarkedMovies = async () => {
+        try {
+          const movies = await getAllDocs("bookmarks");
+          setBookmarkedMovies(movies);
 
-        // Group movies by country
-        const groupedMovies = movies.reduce((groups, movie) => {
-          const country = movie.productionCountries;
-          if (country && CountryCoordinates[country]) {
-            if (!groups[country]) {
-              groups[country] = [];
+          // Group movies by country
+          const groupedMovies = movies.reduce((groups, movie) => {
+            const country = movie.productionCountries;
+            if (country && CountryCoordinates[country]) {
+              if (!groups[country]) {
+                groups[country] = [];
+              }
+              groups[country].push(movie);
             }
-            groups[country].push(movie);
-          }
-          return groups;
-        }, {});
+            return groups;
+          }, {});
 
-        setMoviesByCountry(groupedMovies);
-        
-        // Count movies per country
-        const movieCountsByCountry = Object.keys(groupedMovies).reduce((counts, country) => {
-          counts[country] = groupedMovies[country].length;
-          return counts;
-        }, {});
+          setMoviesByCountry(groupedMovies);
+          
+          // Count movies per country
+          const movieCountsByCountry = Object.keys(groupedMovies).reduce((counts, country) => {
+            counts[country] = groupedMovies[country].length;
+            return counts;
+          }, {});
 
-        setCountryMovieCounts(movieCountsByCountry);
-      } catch (error) {
-        console.error("Error fetching bookmarked movies:", error);
-      }
-    };
+          setCountryMovieCounts(movieCountsByCountry);
+        } catch (error) {
+          console.error("Error fetching bookmarked movies:", error);
+        }
+      };
 
-    loadBookmarkedMovies();
-  }, []);
+      loadBookmarkedMovies();
+    }, [])
+  );
 
   const handleMarkerPress = (country) => {
     const movies = moviesByCountry[country];
