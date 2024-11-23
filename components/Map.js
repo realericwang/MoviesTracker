@@ -11,6 +11,7 @@ const Map = ({ navigation }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
   const [countryMovieCounts, setCountryMovieCounts] = useState({});
+  const [moviesByCountry, setMoviesByCountry] = useState({});
 
   useEffect(() => {
     const loadBookmarkedMovies = async () => {
@@ -18,13 +19,23 @@ const Map = ({ navigation }) => {
         const movies = await getAllDocs("bookmarks");
         setBookmarkedMovies(movies);
 
-        // Count movies per country
-        const movieCountsByCountry = movies.reduce((counts, movie) => {
+        // Group movies by country
+        const groupedMovies = movies.reduce((groups, movie) => {
           const country = movie.productionCountries;
           if (country && CountryCoordinates[country]) {
-            // Only count if country exists in coordinates
-            counts[country] = (counts[country] || 0) + 1;
+            if (!groups[country]) {
+              groups[country] = [];
+            }
+            groups[country].push(movie);
           }
+          return groups;
+        }, {});
+
+        setMoviesByCountry(groupedMovies);
+        
+        // Count movies per country
+        const movieCountsByCountry = Object.keys(groupedMovies).reduce((counts, country) => {
+          counts[country] = groupedMovies[country].length;
           return counts;
         }, {});
 
@@ -37,78 +48,75 @@ const Map = ({ navigation }) => {
     loadBookmarkedMovies();
   }, []);
 
-  const handleMarkerPress = (movie) => {
-    if (movie.movieId) {
-      console.log(
-        "Navigating to movie:",
-        movie.movieTitle,
-        "with ID:",
-        movie.movieId
-      );
-      navigation.navigate("MovieDetail", { movieId: movie.movieId });
-    } else {
-      console.error("MovieId is undefined for movie:", movie.movieTitle);
+  const handleMarkerPress = (country) => {
+    const movies = moviesByCountry[country];
+    if (movies && movies.length > 0) {
+      // If only one movie, navigate directly to it
+      if (movies.length === 1) {
+        navigation.navigate("MovieDetail", { movieId: movies[0].movieId });
+      } else {
+        // If multiple movies, show modal or navigate to a list screen
+        navigation.navigate("CountryMovies", { 
+          country,
+          movies: movies,
+          countryColor: CountryCoordinates[country]?.color
+        });
+      }
     }
   };
 
   return (
-    <>
-      <MapView
-        mapType="satellite"
-        initialRegion={{
-          latitude: 49.2827,
-          longitude: -123.1207,
-          latitudeDelta: 115,
-          longitudeDelta: 150,
-        }}
-        style={styles.map}
-      >
-        {bookmarkedMovies
-          .filter((movie) => {
-            const country = movie.productionCountries;
-            return country && CountryCoordinates[country];
-          })
-          .map((movie, index) => {
-            const country = movie.productionCountries;
-            const coordinates = CountryCoordinates[country];
-            const movieCount = countryMovieCounts[country] || 0;
+    <MapView
+      mapType="satellite"
+      initialRegion={{
+        latitude: 49.2827,
+        longitude: -123.1207,
+        latitudeDelta: 115,
+        longitudeDelta: 150,
+      }}
+      style={styles.map}
+    >
+      {Object.entries(moviesByCountry).map(([country, movies]) => {
+        const coordinates = CountryCoordinates[country];
+        const movieCount = movies.length;
+        const firstMovie = movies[0];
 
-            return (
-              <Marker
-                key={`${movie.id}-${index}`}
-                coordinate={{
-                  latitude: coordinates.latitude,
-                  longitude: coordinates.longitude,
-                }}
-                title={movie.movieTitle}
-                description={`${movie.genres} - Directed by ${movie.director}`}
-                onPress={() => handleMarkerPress(movie)}
+        return (
+          <Marker
+            key={country}
+            coordinate={{
+              latitude: coordinates.latitude,
+              longitude: coordinates.longitude,
+            }}
+            title={`${country} (${movieCount} movies)`}
+            description={movieCount > 1 ? "Tap to see all movies" : firstMovie.movieTitle}
+            onPress={() => handleMarkerPress(country)}
+          >
+            <View style={styles.markerContainer}>
+              <RNImage
+                source={{ uri: getImageUrl(firstMovie.posterPath) }}
+                style={styles.poster}
+              />
+              <View
+                style={[
+                  styles.countryName,
+                  {
+                    backgroundColor: CountryCoordinates[country]?.color || "black",
+                  },
+                ]}
               >
-                <View style={styles.markerContainer}>
-                  <RNImage
-                    source={{ uri: getImageUrl(movie.posterPath) }}
-                    style={styles.poster}
-                  />
-                  <View
-                    style={[
-                      styles.countryName,
-                      {
-                        backgroundColor:
-                          CountryCoordinates[country]?.color || "black",
-                      },
-                    ]}
-                  >
-                    <Text>{country}</Text>
-                  </View>
-                  <View style={styles.countBadge}>
-                    <Text style={styles.countText}>{movieCount}</Text>
-                  </View>
+                <Text>{country}</Text>
+              </View>
+              {movieCount > 1 && (
+                <View style={styles.countBadge}>
+                  <Text style={styles.countText}>{movieCount}</Text>
                 </View>
-              </Marker>
-            );
-          })}
-      </MapView>
-    </>
+              )}
+            </View>
+          </Marker>
+        );
+      })}
+    </MapView>
   );
 };
 

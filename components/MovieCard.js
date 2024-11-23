@@ -15,6 +15,7 @@ import { getImageUrl } from "../api/tmdbApi";
 export default function MovieCard({ movie, onPress }) {
   const title = movie.title || movie.name;
   const releaseDate = movie.release_date || movie.first_air_date;
+  const rating = movie.vote_average ? movie.vote_average.toFixed(1) : "N/A";
 
   return (
     <TouchableOpacity onPress={onPress} style={styles.container}>
@@ -27,7 +28,7 @@ export default function MovieCard({ movie, onPress }) {
           {title}
         </Text>
         <View style={styles.ratingContainer}>
-          <Text style={styles.rating}>★ {movie.vote_average.toFixed(1)}</Text>
+          <Text style={styles.rating}>★ {rating}</Text>
         </View>
       </View>
     </TouchableOpacity>
