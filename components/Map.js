@@ -14,8 +14,6 @@ const Map = ({navigation}) => {
     const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
     const [countryMovieCounts, setCountryMovieCounts] = useState({});
     const [moviesByCountry, setMoviesByCountry] = useState({});
-    const [refresh, setRefresh] = useState(0);
-
     useFocusEffect(
         useCallback(() => {
             const loadBookmarkedMovies = async () => {
@@ -73,12 +71,6 @@ const Map = ({navigation}) => {
     return (
         <MapView
             mapType="satellite"
-            // initialRegion={{
-            //   latitude: 49.2827,
-            //   longitude: -123.1207,
-            //   latitudeDelta: 115,
-            //   longitudeDelta: 150,
-            // }}
             style={styles.map}
         >
             {Object.entries(moviesByCountry).map(([country, movies]) => {
@@ -98,17 +90,6 @@ const Map = ({navigation}) => {
                         onPress={() => handleMarkerPress(country)}
                         image={{uri: getImageUrl(firstMovie.posterPath)}} // Use the image prop
                     >
-                        {/*<Callout onPress={() => handleMarkerPress(country)}>*/}
-                        {/*    <View style={styles.calloutContainer}>*/}
-                        {/*        <Text style={styles.countryText}>{country}</Text>*/}
-                        {/*        {movieCount > 1 && (*/}
-                        {/*            <View style={styles.countBadge}>*/}
-                        {/*                <Text style={styles.countText}>{movieCount}</Text>*/}
-                        {/*            </View>*/}
-                        {/*        )}*/}
-                        {/*    </View>*/}
-                        {/*</Callout>*/}
-                        {/* Wrap labels in a custom View */}
                         <View style={styles.markerContainer}>
                             {/* Country Label */}
                             <View
