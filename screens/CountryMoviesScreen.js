@@ -109,6 +109,7 @@ const styles = StyleSheet.create({
   headerContainer: {
     height: 180,
     marginBottom: spacing.xl,
+    marginTop:spacing.xl
   },
   gradientHeader: {
     flex: 1,
