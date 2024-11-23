@@ -1,7 +1,7 @@
-import {View, Text, StyleSheet} from "react-native";
-import {useState} from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { useState } from "react";
 import Map from "../components/Map";
-import {useNavigation} from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 /**
  * FootprintScreen Component
  *
@@ -13,19 +13,19 @@ import {useNavigation} from "@react-navigation/native";
  * @returns {React.Element} The rendered FootprintScreen component.
  */
 export default function FootprintScreen() {
-    const navigation = useNavigation();
-    return (
-        <View style={styles.container}>
-            <Map navigation={navigation}/>
-        </View>
-    );
+  const navigation = useNavigation();
+  return (
+    <View style={styles.container}>
+      <Map navigation={navigation} />
+    </View>
+  );
 }
 /**
  * Styles for the FootprintScreen component.
  * Defines the layout, alignment, and text styling.
  */
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
+  container: {
+    flex: 1,
+  },
 });
