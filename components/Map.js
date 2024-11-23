@@ -142,36 +142,36 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     markerContainer: {
-        position: 'relative', // Set to relative
-        alignItems: 'center', // Center children horizontally
-    },
-    countryLabel: {
-        position: 'absolute',
-        top: '100%', // Position it below the marker image
-        marginTop: 5, // Add some space
-        alignSelf: 'center',
-        paddingHorizontal: 5,
-        paddingVertical: 2,
-        borderRadius: 5,
-    },
-    countryText: {
-        color: "white",
-        fontWeight: "bold",
+        flexDirection: 'row', // Arrange children horizontally
+        alignItems: 'center', // Center vertically
+        top: 5,
+        right: -2
     },
     countBadge: {
-        position: "absolute",
-        top: -10, // Position it above the marker image
-        right: -50, // Position it to the right of the marker image
         backgroundColor: "red",
-        borderRadius: 15,
-        width: 25,
-        height: 25,
+        borderRadius: 12.5, // Half of width and height for a circle
+        width: 15,
+        height: 15,
         justifyContent: "center",
         alignItems: "center",
+        marginRight: 5, // Space between badge and marker image
+        left: -5,
+        top: -3
     },
     countText: {
         color: "white",
         fontWeight: "bold",
-        fontSize: 12,
+        fontSize: 9,
+    },
+    countryLabel: {
+        backgroundColor: "black", // Will be overridden by dynamic color
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        borderRadius: 5,
+        marginLeft: -5, // Space between marker image and label
+    },
+    countryText: {
+        color: "white",
+        fontWeight: "bold",
     },
 });
