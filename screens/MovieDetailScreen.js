@@ -33,6 +33,8 @@ import {
 import { where } from "firebase/firestore";
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import * as Notifications from 'expo-notifications';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const { width } = Dimensions.get("window");
 
@@ -70,6 +72,11 @@ export default function MovieDetailScreen({ route }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const [reviewImage, setReviewImage] = useState(null);
+
+  const [isReminderModalVisible, setIsReminderModalVisible] = useState(false);
+  const [reminderDate, setReminderDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const fetchReviews = async () => {
     try {
@@ -329,6 +336,31 @@ export default function MovieDetailScreen({ route }) {
     }
   };
 
+  const scheduleReminder = async (movieTitle, date) => {
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Please enable notifications to set reminders');
+        return;
+      }
+
+      const trigger = date;
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Movie Reminder',
+          body: `Time to watch ${movieTitle}!`,
+          data: { movieId },
+        },
+        trigger,
+      });
+
+      Alert.alert('Reminder set', `We'll remind you to watch ${movieTitle} on ${date.toLocaleString()}`);
+    } catch (error) {
+      console.error('Error setting reminder:', error);
+      Alert.alert('Error', 'Failed to set reminder. Please try again.');
+    }
+  };
+
   if (isLoading || !movie) {
     return (
       <View style={styles.loadingContainer}>
@@ -362,6 +394,25 @@ export default function MovieDetailScreen({ route }) {
                   size={24}
                   color={colors.primary}
                 />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.bookmarkButton, { marginLeft: 10 }]}
+                onPress={() => {
+                  if (!user) {
+                    Alert.alert(
+                      "Login Required",
+                      "You need to login to set reminders",
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        { text: "Login", onPress: () => navigation.navigate("Auth") }
+                      ]
+                    );
+                    return;
+                  }
+                  setIsReminderModalVisible(true);
+                }}
+              >
+                <Ionicons name="alarm-outline" size={24} color={colors.primary} />
               </TouchableOpacity>
             </View>
           </View>
@@ -611,6 +662,74 @@ export default function MovieDetailScreen({ route }) {
               </View>
             </View>
           </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </Modal>
+      <Modal
+        visible={isReminderModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsReminderModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setIsReminderModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Set Reminder</Text>
+                
+                <TouchableOpacity
+                  style={styles.datePickerButton}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Ionicons name="calendar-outline" size={24} color={colors.primary} />
+                  <Text style={styles.datePickerButtonText}>
+                    {reminderDate.toLocaleDateString()}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.datePickerButton}
+                  onPress={() => setShowTimePicker(true)}
+                >
+                  <Ionicons name="time-outline" size={24} color={colors.primary} />
+                  <Text style={styles.datePickerButtonText}>
+                    {reminderDate.toLocaleTimeString()}
+                  </Text>
+                </TouchableOpacity>
+
+                {(showDatePicker || showTimePicker) && (
+                  <DateTimePicker
+                    value={reminderDate}
+                    mode={showDatePicker ? 'date' : 'time'}
+                    onChange={(event, selectedDate) => {
+                      if (selectedDate) {
+                        setReminderDate(selectedDate);
+                      }
+                      setShowDatePicker(false);
+                      setShowTimePicker(false);
+                    }}
+                  />
+                )}
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={() => {
+                      scheduleReminder(movie.title, reminderDate);
+                      setIsReminderModalVisible(false);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Set Reminder</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={() => setIsReminderModalVisible(false)}
+                  >
+                    <Text style={styles.modalButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
         </TouchableWithoutFeedback>
       </Modal>
     </View>
@@ -965,5 +1084,18 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 8,
     marginTop: spacing.md,
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    backgroundColor: `${colors.primary}15`,
+    borderRadius: 8,
+    marginBottom: spacing.md,
+  },
+  datePickerButtonText: {
+    marginLeft: spacing.sm,
+    color: colors.text,
+    fontSize: 16,
   },
 });
