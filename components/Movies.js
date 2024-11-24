@@ -28,16 +28,24 @@ export default function Movies() {
 
   useEffect(() => {
     const loadMovies = async () => {
-      const [popular, upcoming, topRated, byCountry] = await Promise.all([
-        fetchPopularMovies(),
-        fetchUpcomingMovies(),
-        fetchTopRatedMovies(),
-        fetchMoviesByCountry(),
-      ]);
-      setPopularMovies(popular);
-      setUpcomingMovies(upcoming);
-      setTopRatedMovies(topRated);
-      setMoviesByCountry(byCountry);
+      try {
+        const [popular, upcoming, topRated] = await Promise.all([
+          fetchPopularMovies(),
+          fetchUpcomingMovies(),
+          fetchTopRatedMovies(),
+        ]);
+
+        if (!popular || !upcoming || !topRated) {
+          throw new Error("Failed to fetch movies");
+        }
+
+        setPopularMovies(popular);
+        setUpcomingMovies(upcoming);
+        setTopRatedMovies(topRated);
+      } catch (error) {
+        console.error("Error loading movies:", error);
+        // Handle error state here
+      }
     };
     loadMovies();
   }, []);
@@ -50,15 +58,6 @@ export default function Movies() {
   return (
     <ScrollView style={styles.container}>
       <BannerRotator movies={popularMovies} />
-      <MovieCategory title="Movies by Country">
-        {moviesByCountry.flat().map((movie, index) => (
-          <MovieCard
-            key={`country-${movie.id}-${index}`}
-            movie={movie}
-            onPress={() => handleMoviePress(movie)}
-          />
-        ))}
-      </MovieCategory>
       <MovieCategory title="Popular Movies">
         {popularMovies.map((movie) => (
           <MovieCard

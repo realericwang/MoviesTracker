@@ -14,10 +14,9 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { auth } from "../firebase/firebaseSetup";
-import { getDocsByQueries } from "../firebase/firestoreHelper";
+import { fetchBookmarkedMovies } from "../firebase/firestoreHelper";
 import { getImageUrl } from "../api/tmdbApi";
 import { colors, spacing } from "../styles/globalStyles";
-import { where } from "firebase/firestore";
 import { Ionicons } from "@expo/vector-icons";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -47,7 +46,7 @@ export default function BookmarksScreen() {
    * Fetches bookmarked movies from Firestore based on the authenticated user.
    * Sets the `bookmarkedMovies` state with the fetched data.
    */
-  const fetchBookmarkedMovies = async () => {
+  const loadBookmarkedMovies = async () => {
     if (!user) {
       setBookmarkedMovies([]);
       setIsLoading(false);
@@ -55,13 +54,11 @@ export default function BookmarksScreen() {
     }
     try {
       setError(null);
-      const bookmarksData = await getDocsByQueries("bookmarks", [
-        where("userId", "==", user.uid),
-      ]);
+      const bookmarksData = await fetchBookmarkedMovies(user);
       setBookmarkedMovies(bookmarksData);
     } catch (error) {
       console.error("Error fetching bookmarks:", error);
-      setError("Failed to load bookmarks. Please try again.");
+      setError(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -69,20 +66,20 @@ export default function BookmarksScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchBookmarkedMovies();
+    await loadBookmarkedMovies();
     setRefreshing(false);
   }, []);
 
   useEffect(() => {
     return navigation.addListener("focus", () => {
-      fetchBookmarkedMovies();
+      loadBookmarkedMovies();
     });
   }, [navigation]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      fetchBookmarkedMovies();
+      loadBookmarkedMovies();
     });
 
     return () => unsubscribe();
@@ -166,7 +163,7 @@ export default function BookmarksScreen() {
         <Text style={styles.errorText}>{error}</Text>
         <TouchableOpacity
           style={styles.retryButton}
-          onPress={fetchBookmarkedMovies}
+          onPress={loadBookmarkedMovies}
         >
           <Text style={styles.retryText}>Retry</Text>
         </TouchableOpacity>

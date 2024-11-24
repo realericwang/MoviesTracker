@@ -1,4 +1,4 @@
-const API_KEY = "a80f392256d3c7c3005432ab07b19299";
+const API_KEY = process.env.EXPO_PUBLIC_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
 
 /**
@@ -182,52 +182,4 @@ export const searchMoviesAndTVShows = async (query) => {
     console.error("Error searching:", error);
     return { movies: [], tvShows: [] };
   }
-};
-
-/**
- * Fetches a list of movies produced by different countries from the TMDB API
- * @returns {Promise<Array>} Array of movie objects from different countries
- */
-export const fetchMoviesByCountry = async () => {
-  const countryCodes = [
-    "US", // North America
-    "JP", // Asia
-    "IN", // Asia
-    "BR", // South America
-    "DE", // Europe
-    "KR", // Asia
-    "IT", // Europe
-    "CA", // North America
-    "AU", // Australia
-    "CN", // Asia (China)
-    "SG", // Asia (Singapore)
-    "NG", // Africa (Nigeria)
-    "ZA", // Africa (South Africa)
-    "EG", // Africa (Egypt)
-    "KE", // Africa (Kenya)
-    "FR", // Europe (France)
-    "GB", // Europe (United Kingdom)
-  ];
-
-  const moviePromises = countryCodes.map(async (countryCode) => {
-    try {
-      // Corrected URL parameters
-      const response = await fetch(
-        `${BASE_URL}/discover/movie?api_key=${API_KEY}&` +
-          `language=en-US&` +
-          `with_origin_country=${countryCode}&` + // Changed from 'country'
-          `with_original_language=en&` +
-          `page=1`
-      );
-
-      const data = await response.json();
-      return data.results.slice(0, 1);
-    } catch (error) {
-      console.error(`Error fetching movies for country ${countryCode}:`, error);
-      return [];
-    }
-  });
-
-  const movies = await Promise.all(moviePromises);
-  return movies.flat();
 };

@@ -16,7 +16,7 @@ import MovieDetailScreen from "../screens/MovieDetailScreen";
 import TVShowDetailScreen from "../screens/TVShowDetailScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
-import CountryMoviesScreen from "../screens/CountryMoviesScreen";
+import CinemaDetailScreen from "../screens/CinemaDetailScreen";
 /**
  * AppNavigator: Main navigation structure for the application.
  *
@@ -97,13 +97,13 @@ export function AppNavigator() {
           headerTintColor: colors.text,
         }}
       />
-      <Stack.Screen 
-        name="CountryMovies" 
-        component={CountryMoviesScreen}
-        options={({ route }) => ({
-          title: `Movies from ${route.params.country}`,
-          headerTintColor: route.params.countryColor
-        })}
+      <Stack.Screen
+        name="CinemaDetail"
+        component={CinemaDetailScreen}
+        options={{
+          title: "Cinema Details",
+          headerBackTitleVisible: false,
+        }}
       />
     </Stack.Navigator>
   );
