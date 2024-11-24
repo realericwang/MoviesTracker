@@ -92,8 +92,6 @@ const Map = ({ navigation }) => {
         latitudeDelta: 100,
         longitudeDelta: 100,
       }}
-      minZoomLevel={2}
-      maxZoomLevel={7}
       rotateEnabled={false}
     >
       {Object.entries(moviesByCountry).map(([country, movies]) => {
