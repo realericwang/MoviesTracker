@@ -15,7 +15,7 @@ export const signUp = async (email, password) => {
     return { user: userCredential.user, error: null };
   } catch (error) {
     let errorMessage = "An error occurred during signup";
-    if (error.code === "auth/email-already-exists") {
+    if (error.code === "auth/email-already-in-use") {
       errorMessage = "This email is already registered";
     } else if (error.code === "auth/weak-password") {
       errorMessage = "Password should be at least 6 characters";

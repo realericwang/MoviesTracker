@@ -11,6 +11,10 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Keyboard,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../styles/globalStyles";
@@ -27,6 +31,8 @@ import {
   getDocsByQueries,
 } from "../firebase/firestoreHelper";
 import { where } from "firebase/firestore";
+import * as ImagePicker from "expo-image-picker";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const { width } = Dimensions.get("window");
 
@@ -63,6 +69,8 @@ export default function MovieDetailScreen({ route }) {
 
   const [isLoading, setIsLoading] = useState(true);
 
+  const [reviewImage, setReviewImage] = useState(null);
+
   const fetchReviews = async () => {
     try {
       const reviewsData = await getDocsByQueries("reviews", [
@@ -89,12 +97,26 @@ export default function MovieDetailScreen({ route }) {
       return;
     }
     try {
+      let imageUrl = null;
+      if (reviewImage) {
+        const response = await fetch(reviewImage);
+        const blob = await response.blob();
+        const storage = getStorage();
+        const imageRef = ref(
+          storage,
+          `review_images/${user.uid}_${Date.now()}`
+        );
+        await uploadBytes(imageRef, blob);
+        imageUrl = await getDownloadURL(imageRef);
+      }
+
       if (userReview) {
         await updateDocInDB(
           userReview.id,
           {
             text: reviewText,
             timestamp: Date.now(),
+            imageUrl: imageUrl || userReview.imageUrl,
           },
           "reviews"
         );
@@ -106,14 +128,17 @@ export default function MovieDetailScreen({ route }) {
             userName: user.displayName || "Anonymous",
             text: reviewText,
             timestamp: Date.now(),
+            imageUrl,
           },
           "reviews"
         );
       }
       setIsModalVisible(false);
+      setReviewImage(null);
       await fetchReviews();
     } catch (error) {
       console.error("Error submitting review:", error);
+      Alert.alert("Error", "Failed to submit review. Please try again.");
     }
   };
   const handleDeleteReview = async () => {
@@ -268,6 +293,42 @@ export default function MovieDetailScreen({ route }) {
     }
   }, [isModalVisible]);
 
+  const handleImagePick = async (type) => {
+    try {
+      let result;
+      if (type === "camera") {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert(
+            "Permission needed",
+            "Camera permission is required to take photos"
+          );
+          return;
+        }
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: "images",
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.2,
+        });
+      } else {
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: "images",
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.3,
+        });
+      }
+
+      if (!result.canceled) {
+        setReviewImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to pick image. Please try again.");
+    }
+  };
+
   if (isLoading || !movie) {
     return (
       <View style={styles.loadingContainer}>
@@ -417,6 +478,12 @@ export default function MovieDetailScreen({ route }) {
                   {new Date(review.timestamp).toLocaleString()}
                 </Text>
                 <Text style={styles.reviewText}>{review.text}</Text>
+                {review.imageUrl && (
+                  <Image
+                    source={{ uri: review.imageUrl }}
+                    style={styles.reviewImage}
+                  />
+                )}
               </View>
             ))
           )}
@@ -452,46 +519,99 @@ export default function MovieDetailScreen({ route }) {
         visible={isModalVisible}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setIsModalVisible(false)}
+        onRequestClose={() => {
+          setIsModalVisible(false);
+          setReviewImage(null);
+        }}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {userReview ? "Edit Review" : "Write a Review"}
-            </Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Write your review here..."
-              multiline
-              value={reviewText}
-              onChangeText={setReviewText}
-            />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={handleSubmitReview}
-              >
-                <Text style={styles.modalButtonText}>
-                  {userReview ? "Update" : "Submit"}
-                </Text>
-              </TouchableOpacity>
-              {userReview && (
-                <TouchableOpacity
-                  style={[styles.modalButton, { backgroundColor: "red" }]}
-                  onPress={handleDeleteReview}
-                >
-                  <Text style={styles.modalButtonText}>Delete</Text>
-                </TouchableOpacity>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.modalContainer}
+          >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>
+                {userReview ? "Edit Review" : "Write a Review"}
+              </Text>
+
+              <TextInput
+                style={styles.textInput}
+                placeholder="Write your review here..."
+                multiline
+                value={reviewText}
+                onChangeText={setReviewText}
+                returnKeyType="done"
+                onSubmitEditing={Keyboard.dismiss}
+                blurOnSubmit={true}
+              />
+
+              {reviewImage && (
+                <View style={styles.imagePreviewContainer}>
+                  <Image
+                    source={{ uri: reviewImage }}
+                    style={styles.imagePreview}
+                  />
+                  <TouchableOpacity
+                    style={styles.removeImageButton}
+                    onPress={() => setReviewImage(null)}
+                  >
+                    <Ionicons
+                      name="close-circle"
+                      size={24}
+                      color={colors.text}
+                    />
+                  </TouchableOpacity>
+                </View>
               )}
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={() => setIsModalVisible(false)}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
+
+              <View style={styles.imageButtons}>
+                <TouchableOpacity
+                  style={styles.imageButton}
+                  onPress={() => handleImagePick("camera")}
+                >
+                  <Ionicons name="camera" size={24} color={colors.primary} />
+                  <Text style={styles.imageButtonText}>Take Photo</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.imageButton}
+                  onPress={() => handleImagePick("library")}
+                >
+                  <Ionicons name="images" size={24} color={colors.primary} />
+                  <Text style={styles.imageButtonText}>Choose Photo</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={handleSubmitReview}
+                >
+                  <Text style={styles.modalButtonText}>
+                    {userReview ? "Update" : "Submit"}
+                  </Text>
+                </TouchableOpacity>
+                {userReview && (
+                  <TouchableOpacity
+                    style={[styles.modalButton, { backgroundColor: "red" }]}
+                    onPress={handleDeleteReview}
+                  >
+                    <Text style={styles.modalButtonText}>Delete</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => {
+                    setIsModalVisible(false);
+                    setReviewImage(null);
+                  }}
+                >
+                  <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        </View>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
@@ -715,21 +835,15 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-end",
     backgroundColor: "rgba(0,0,0,0.5)",
-    padding: spacing.lg,
   },
   modalContent: {
     backgroundColor: colors.background,
-    borderRadius: 16,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     padding: spacing.lg,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: `${colors.primary}20`,
+    maxHeight: "80%",
   },
   modalTitle: {
     fontSize: 20,
@@ -746,6 +860,7 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
     marginBottom: spacing.md,
     color: colors.text,
+    backgroundColor: `${colors.surface}50`,
   },
   modalButtons: {
     flexDirection: "row",
@@ -809,5 +924,46 @@ const styles = StyleSheet.create({
   reviewsSection: {
     marginTop: spacing.lg,
     paddingHorizontal: spacing.lg,
+  },
+  imagePreviewContainer: {
+    marginVertical: spacing.md,
+    position: "relative",
+  },
+  imagePreview: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginBottom: spacing.md,
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 12,
+  },
+  imageButtons: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: spacing.md,
+  },
+  imageButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: spacing.sm,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  imageButtonText: {
+    color: colors.primary,
+    marginLeft: spacing.xs,
+    fontSize: 14,
+  },
+  reviewImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginTop: spacing.md,
   },
 });

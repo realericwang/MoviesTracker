@@ -1,26 +1,25 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import MapView, { Marker } from "react-native-maps";
 import { StyleSheet, View, Text } from "react-native";
-import Favicon from "../assets/favicon.png";
-import { fetchPopularMovies, getImageUrl } from "../api/tmdbApi";
-import { getAllDocs } from "../firebase/firestoreHelper";
-import { Image as RNImage } from "react-native";
+import { fetchUserBookmarks } from "../firebase/firestoreHelper";
 import CountryCoordinates from "./common/CountryCoordinates";
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
-
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+import { Animated } from "react-native";
 const Map = ({ navigation }) => {
-  const [selectedLocation, setSelectedLocation] = useState(null);
   const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
   const [countryMovieCounts, setCountryMovieCounts] = useState({});
   const [moviesByCountry, setMoviesByCountry] = useState({});
-  const [refresh, setRefresh] = useState(0);
+  const [selectedMarker, setSelectedMarker] = useState(null);
+
+  // Add marker animation
+  const markerScale = new Animated.Value(1);
 
   useFocusEffect(
     useCallback(() => {
       const loadBookmarkedMovies = async () => {
         try {
-          const movies = await getAllDocs("bookmarks");
+          const movies = await fetchUserBookmarks();
           setBookmarkedMovies(movies);
 
           // Group movies by country
@@ -36,12 +35,15 @@ const Map = ({ navigation }) => {
           }, {});
 
           setMoviesByCountry(groupedMovies);
-          
+
           // Count movies per country
-          const movieCountsByCountry = Object.keys(groupedMovies).reduce((counts, country) => {
-            counts[country] = groupedMovies[country].length;
-            return counts;
-          }, {});
+          const movieCountsByCountry = Object.keys(groupedMovies).reduce(
+            (counts, country) => {
+              counts[country] = groupedMovies[country].length;
+              return counts;
+            },
+            {}
+          );
 
           setCountryMovieCounts(movieCountsByCountry);
         } catch (error) {
@@ -54,37 +56,49 @@ const Map = ({ navigation }) => {
   );
 
   const handleMarkerPress = (country) => {
+    setSelectedMarker(country);
+    // Add click animation
+    Animated.sequence([
+      Animated.timing(markerScale, {
+        toValue: 1.2,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(markerScale, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
     const movies = moviesByCountry[country];
     if (movies && movies.length > 0) {
-      // If only one movie, navigate directly to it
-      if (movies.length === 1) {
-        navigation.navigate("MovieDetail", { movieId: movies[0].movieId });
-      } else {
-        // If multiple movies, show modal or navigate to a list screen
-        navigation.navigate("CountryMovies", { 
-          country,
-          movies: movies,
-          countryColor: CountryCoordinates[country]?.color
-        });
-      }
+      // If multiple movies, show modal or navigate to a list screen
+      navigation.navigate("CountryMovies", {
+        country,
+        movies: movies,
+        countryColor: CountryCoordinates[country]?.color,
+      });
     }
   };
 
   return (
     <MapView
       mapType="satellite"
-      initialRegion={{
-        latitude: 49.2827,
-        longitude: -123.1207,
-        latitudeDelta: 115,
-        longitudeDelta: 150,
-      }}
       style={styles.map}
+      initialRegion={{
+        latitude: 20,
+        longitude: 0,
+        latitudeDelta: 100,
+        longitudeDelta: 100,
+      }}
+      rotateEnabled={false}
     >
       {Object.entries(moviesByCountry).map(([country, movies]) => {
         const coordinates = CountryCoordinates[country];
         const movieCount = movies.length;
         const firstMovie = movies[0];
+        const isSelected = selectedMarker === country;
 
         return (
           <Marker
@@ -93,31 +107,32 @@ const Map = ({ navigation }) => {
               latitude: coordinates.latitude,
               longitude: coordinates.longitude,
             }}
-            title={`${country} (${movieCount} movies)`}
-            description={movieCount > 1 ? "Tap to see all movies" : firstMovie.movieTitle}
             onPress={() => handleMarkerPress(country)}
           >
-            <View style={styles.markerContainer}>
-              <RNImage
-                source={{ uri: getImageUrl(firstMovie.posterPath) }}
-                style={styles.poster}
-              />
+            <Animated.View
+              style={[
+                styles.markerContainer,
+                {
+                  transform: [{ scale: isSelected ? markerScale : 1 }],
+                },
+              ]}
+            >
               <View
                 style={[
-                  styles.countryName,
+                  styles.countryLabel,
                   {
-                    backgroundColor: CountryCoordinates[country]?.color || "black",
+                    backgroundColor:
+                      CountryCoordinates[country]?.color || "#000",
                   },
+                  isSelected && styles.selectedLabel,
                 ]}
               >
-                <Text>{country}</Text>
+                <Text style={styles.countryText}>{country}</Text>
+                {movieCount > 1 && (
+                  <Text style={styles.countText}>{` (${movieCount})`}</Text>
+                )}
               </View>
-              {movieCount > 1 && (
-                <View style={styles.countBadge}>
-                  <Text style={styles.countText}>{movieCount}</Text>
-                </View>
-              )}
-            </View>
+            </Animated.View>
           </Marker>
         );
       })}
@@ -132,34 +147,35 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   markerContainer: {
-    position: "relative",
-  },
-  poster: {
-    width: 100,
-    height: 150,
-    borderRadius: 15,
-  },
-  countBadge: {
-    position: "absolute",
-    top: -10,
-    right: -10,
-    backgroundColor: "red",
-    borderRadius: 15,
-    width: 30,
-    height: 30,
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
+  },
+  countryLabel: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  selectedLabel: {
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  countryText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 12,
   },
   countText: {
     color: "white",
-    fontWeight: "bold",
-  },
-  countryName: {
-    backgroundColor: "yellow",
-    padding: 5,
-    borderRadius: 5,
-    position: "absolute",
-    left: -15,
-    top: 5,
+    fontSize: 12,
   },
 });
