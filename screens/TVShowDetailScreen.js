@@ -168,28 +168,39 @@ export default function TVShowDetailScreen({ route }) {
   const handleBookmarkPress = async () => {
     if (!user) {
       Alert.alert("Login Required", "You need to login to bookmark TV shows", [
-        { text: "Cancel", style: "cancel" },
-        { text: "Login", onPress: () => navigation.navigate("Auth") },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Login",
+          onPress: () => navigation.navigate("Auth"),
+        },
       ]);
       return;
     }
 
     try {
       if (isBookmarked) {
+        // Optimistically update UI
         setIsBookmarked(false);
         const bookmarkIdToDelete = bookmarksID;
         setBookmarksID(null);
 
+        // Handle backend in background
         try {
           await deleteFromDB(bookmarkIdToDelete, "tvshowbookmarks");
         } catch (error) {
+          // Revert UI if backend fails
           console.error("Error deleting bookmark:", error);
           setIsBookmarked(true);
           setBookmarksID(bookmarkIdToDelete);
         }
       } else {
+        // Optimistically update UI
         setIsBookmarked(true);
 
+        // Handle backend in background
         try {
           const existingBookmark = await getDocsByQueries(
             "tvshowbookmarks",
@@ -207,8 +218,19 @@ export default function TVShowDetailScreen({ route }) {
               firstAirDate: show.first_air_date,
               genres: show.genres?.map((g) => g.name).join(", "),
               numberOfSeasons: show.number_of_seasons,
+              numberOfEpisodes: show.number_of_episodes,
               voteAverage: show.vote_average,
               overview: show.overview,
+              creator: show.created_by?.[0]?.name || "Unknown",
+              cast: show.credits?.cast?.slice(0, 10).map((actor) => ({
+                id: actor.id,
+                name: actor.name,
+                character: actor.character,
+                profilePath: actor.profile_path,
+              })),
+              status: show.status,
+              networks: show.networks?.map((network) => network.name).join(", ") || "Unknown",
+              productionCountries: show.production_countries?.[0]?.iso_3166_1 || "Unknown",
               timestamp: Date.now(),
             };
 
@@ -222,6 +244,7 @@ export default function TVShowDetailScreen({ route }) {
             setBookmarksID(bookmarkData.id);
           }
         } catch (error) {
+          // Revert UI if backend fails
           console.error("Error adding bookmark:", error);
           setIsBookmarked(false);
           setBookmarksID(null);
@@ -912,5 +935,31 @@ const styles = StyleSheet.create({
     height: 120,
     marginHorizontal: -spacing.md,
     backgroundColor: colors.background,
+  },
+  posterContainer: {
+    marginTop: -50,
+    marginBottom: spacing.md,
+    alignItems: "center",
+  },
+  poster: {
+    width: 150,
+    height: 225,
+    borderRadius: 8,
+    marginBottom: spacing.sm,
+  },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  bookmarkButton: {
+    backgroundColor: colors.surface,
+    padding: spacing.sm,
+    borderRadius: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });
