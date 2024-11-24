@@ -64,12 +64,12 @@ const AccountScreen = () => {
     {
       icon: "help-circle-outline",
       title: "Help & Support",
-      onPress: () => console.log("Help pressed"),
+      onPress: () => navigation.navigate("HelpSupport"),
     },
     {
       icon: "information-circle-outline",
       title: "About",
-      onPress: () => console.log("About pressed"),
+      onPress: () => navigation.navigate("About"),
     },
   ];
 
