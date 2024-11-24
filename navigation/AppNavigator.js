@@ -10,7 +10,7 @@ import { AuthStack } from "./AuthStack";
 // Import screens
 import HomeScreen from "../screens/HomeScreen";
 import BookmarksScreen from "../screens/BookmarksScreen";
-import FootprintScreen from "../screens/FootprintScreen";
+import MapScreen from "../screens/MapScreen";
 import AccountScreen from "../screens/AccountScreen";
 import MovieDetailScreen from "../screens/MovieDetailScreen";
 import TVShowDetailScreen from "../screens/TVShowDetailScreen";
@@ -42,8 +42,8 @@ function TabNavigator() {
             iconName = focused ? "home" : "home-outline";
           } else if (route.name === "Bookmarks") {
             iconName = focused ? "bookmark" : "bookmark-outline";
-          } else if (route.name === "Footprint") {
-            iconName = focused ? "footsteps" : "footsteps-outline";
+          } else if (route.name === "Map") {
+            iconName = focused ? "map" : "map-outline";
           } else if (route.name === "Account") {
             iconName = focused ? "person" : "person-outline";
           }
@@ -56,7 +56,7 @@ function TabNavigator() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Bookmarks" component={BookmarksScreen} />
-      <Tab.Screen name="Footprint" component={FootprintScreen} />
+      <Tab.Screen name="Map" component={MapScreen} />
       <Tab.Screen name="Account" component={AccountScreen} />
     </Tab.Navigator>
   );
