@@ -7,10 +7,11 @@ import {
   ScrollView,
   Image,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../styles/globalStyles";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { auth } from "../firebase/firebaseSetup";
 import { logout } from "../firebase/authHelper";
 import { onAuthStateChanged } from "firebase/auth";
@@ -22,15 +23,19 @@ import { onAuthStateChanged } from "firebase/auth";
  */
 const AccountScreen = () => {
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const [user, setUser] = useState(auth.currentUser);
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
+      setImageError(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isFocused]);
 
   const handleLogout = async () => {
     const { error } = await logout();
@@ -127,10 +132,13 @@ const AccountScreen = () => {
           />
         </View>
         <View style={styles.profileSection}>
-          {user.photoURL ? (
+          {user.photoURL && !imageError ? (
             <Image
               source={{ uri: user.photoURL }}
               style={styles.profileImage}
+              onLoadStart={() => setImageLoading(true)}
+              onLoadEnd={() => setImageLoading(false)}
+              onError={() => setImageError(true)}
             />
           ) : (
             <View style={[styles.profileImage, styles.profileImagePlaceholder]}>
@@ -138,6 +146,12 @@ const AccountScreen = () => {
                 {(user.displayName || user.email || "U")[0].toUpperCase()}
               </Text>
             </View>
+          )}
+          {imageLoading && (
+            <ActivityIndicator 
+              style={StyleSheet.absoluteFill} 
+              color={colors.primary}
+            />
           )}
           <View style={styles.profileInfo}>
             <Text style={styles.name}>{user.displayName || "User"}</Text>
