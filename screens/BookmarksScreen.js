@@ -14,7 +14,11 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { auth } from "../firebase/firebaseSetup";
-import { fetchBookmarkedMovies } from "../firebase/firestoreHelper";
+import {
+  fetchBookmarkedMovies,
+  getDocsByQueries,
+} from "../firebase/firestoreHelper";
+import { where } from "firebase/firestore";
 import { getImageUrl } from "../api/tmdbApi";
 import { colors, spacing } from "../styles/globalStyles";
 import { Ionicons } from "@expo/vector-icons";
@@ -32,6 +36,8 @@ import { onAuthStateChanged } from "firebase/auth";
  */
 export default function BookmarksScreen() {
   const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
+  const [bookmarkedTVShows, setBookmarkedTVShows] = useState([]);
+  const [combinedBookmarks, setCombinedBookmarks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -49,13 +55,38 @@ export default function BookmarksScreen() {
   const loadBookmarkedMovies = async () => {
     if (!user) {
       setBookmarkedMovies([]);
+      setBookmarkedTVShows([]);
+      setCombinedBookmarks([]);
       setIsLoading(false);
       return;
     }
     try {
       setError(null);
-      const bookmarksData = await fetchBookmarkedMovies(user);
-      setBookmarkedMovies(bookmarksData);
+      const [moviesData, tvShowsData] = await Promise.all([
+        fetchBookmarkedMovies(user),
+        getDocsByQueries("tvshowbookmarks", [where("userId", "==", user.uid)]),
+      ]);
+
+      setBookmarkedMovies(moviesData);
+      setBookmarkedTVShows(tvShowsData);
+
+      // Combine and sort both types of bookmarks
+      const combined = [
+        ...moviesData.map((movie) => ({
+          ...movie,
+          type: "movie",
+          title: movie.movieTitle,
+          date: movie.releaseDate,
+        })),
+        ...tvShowsData.map((show) => ({
+          ...show,
+          type: "tvshow",
+          title: show.showTitle,
+          date: show.firstAirDate,
+        })),
+      ];
+
+      setCombinedBookmarks(combined);
     } catch (error) {
       console.error("Error fetching bookmarks:", error);
       setError(error.message);
@@ -86,15 +117,15 @@ export default function BookmarksScreen() {
   }, []);
 
   useEffect(() => {
-    const filtered = bookmarkedMovies.filter((movie) =>
-      movie.movieTitle.toLowerCase().includes(searchQuery.toLowerCase())
+    const filtered = combinedBookmarks.filter((item) =>
+      item.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Sort the filtered movies
+    // Sort the filtered items
     const sorted = [...filtered].sort((a, b) => {
       if (sortBy === "year") {
-        const yearA = new Date(a.releaseDate).getFullYear();
-        const yearB = new Date(b.releaseDate).getFullYear();
+        const yearA = new Date(a.date).getFullYear();
+        const yearB = new Date(b.date).getFullYear();
         return yearB - yearA; // Sort by year descending
       } else {
         // Sort by timestamp descending (most recently added first)
@@ -103,46 +134,62 @@ export default function BookmarksScreen() {
     });
 
     setFilteredMovies(sorted);
-  }, [searchQuery, bookmarkedMovies, sortBy]);
+  }, [searchQuery, combinedBookmarks, sortBy]);
 
   const renderItem = useCallback(
     ({ item }) => (
       <TouchableOpacity
         style={styles.movieItem}
         onPress={() =>
-          navigation.navigate("MovieDetail", { movieId: item.movieId })
+          navigation.navigate(
+            item.type === "movie" ? "MovieDetail" : "TVShowDetail",
+            item.type === "movie"
+              ? { movieId: item.movieId }
+              : { showId: item.showId }
+          )
         }
         accessible={true}
-        accessibilityLabel={`Movie ${item.movieTitle}`}
-        accessibilityHint="Double tap to view movie details"
+        accessibilityLabel={`${item.type === "movie" ? "Movie" : "TV Show"} ${
+          item.title
+        }`}
+        accessibilityHint="Double tap to view details"
       >
         <Image
           source={{ uri: getImageUrl(item.posterPath) }}
           style={styles.poster}
           accessible={true}
-          accessibilityLabel={`${item.movieTitle} poster`}
+          accessibilityLabel={`${item.title} poster`}
         />
         <View style={styles.movieInfo}>
           <Text style={styles.title} numberOfLines={2}>
-            {item.movieTitle}
+            {item.title}
           </Text>
           <View style={styles.metadataContainer}>
             {item.director && (
               <Text style={styles.directorText} numberOfLines={1}>
-                Dir: {item.director}
+                {item.type === "movie" ? "Dir: " : "Created by: "}
+                {item.type === "movie" ? item.director : item.creator}
               </Text>
             )}
-            {item.releaseDate && (
+            {item.date && (
               <Text style={styles.yearText}>
-                {new Date(item.releaseDate).getFullYear()}
+                {new Date(item.date).getFullYear()}
               </Text>
             )}
           </View>
-          {item.genres && (
-            <Text style={styles.genreText} numberOfLines={1}>
-              {item.genres}
-            </Text>
-          )}
+          <View style={styles.typeAndRating}>
+            <View style={styles.typeTag}>
+              <Text style={styles.typeText}>
+                {item.type === "movie" ? "Movie" : "TV Show"}
+              </Text>
+            </View>
+            <View style={styles.rating}>
+              <Ionicons name="star" size={14} color={colors.primary} />
+              <Text style={styles.ratingText}>
+                {item.voteAverage ? item.voteAverage.toFixed(1) : "N/A"}
+              </Text>
+            </View>
+          </View>
         </View>
       </TouchableOpacity>
     ),
@@ -193,7 +240,7 @@ export default function BookmarksScreen() {
     );
   }
 
-  if (bookmarkedMovies.length === 0) {
+  if (combinedBookmarks.length === 0) {
     return (
       <View style={styles.centerContainer}>
         <Ionicons
@@ -203,7 +250,7 @@ export default function BookmarksScreen() {
         />
         <Text style={styles.emptyStateTitle}>No bookmarks yet</Text>
         <Text style={styles.emptyStateText}>
-          Start adding movies to your bookmarks
+          Start adding movies and TV shows to your bookmarks
         </Text>
       </View>
     );
@@ -559,6 +606,38 @@ const styles = StyleSheet.create({
   },
   dropdownItemTextSelected: {
     color: colors.primary,
+    fontWeight: "600",
+  },
+  typeAndGenre: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: spacing.xs,
+  },
+  typeTag: {
+    backgroundColor: `${colors.primary}15`,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: 12,
+    marginRight: spacing.sm,
+  },
+  typeText: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  typeAndRating: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: spacing.xs,
+  },
+  rating: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  ratingText: {
+    color: colors.textSecondary,
+    fontSize: 13,
     fontWeight: "600",
   },
 });
