@@ -338,6 +338,15 @@ export default function MovieDetailScreen({ route }) {
 
   const scheduleReminder = async (movieTitle, date) => {
     try {
+      // Check if selected date is in the past
+      if (date.getTime() <= new Date().getTime()) {
+        Alert.alert(
+          "Invalid Time",
+          "Please select a future time for the reminder"
+        );
+        return;
+      }
+
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
@@ -766,6 +775,20 @@ export default function MovieDetailScreen({ route }) {
                           display="spinner"
                           onChange={(event, selectedDate) => {
                             if (selectedDate) {
+                              const now = new Date();
+                              // If selected date is today, validate the time
+                              if (selectedDate.toDateString() === now.toDateString() && 
+                                  selectedDate.getTime() <= now.getTime()) {
+                                Alert.alert(
+                                  "Invalid Time",
+                                  "Please select a future time for the reminder"
+                                );
+                                // Set time to next hour
+                                const nextHour = new Date();
+                                nextHour.setHours(nextHour.getHours() + 1, 0, 0, 0);
+                                setReminderDate(nextHour);
+                                return;
+                              }
                               setReminderDate(selectedDate);
                             }
                           }}
