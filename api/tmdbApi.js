@@ -1,4 +1,4 @@
-const API_KEY = "a80f392256d3c7c3005432ab07b19299";
+const API_KEY = process.env.EXPO_PUBLIC_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
 
 /**

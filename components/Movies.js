@@ -35,8 +35,6 @@ export default function Movies() {
           fetchTopRatedMovies(),
         ]);
 
-        console.log("Popular movies:", popular); // Debug log
-
         if (!popular || !upcoming || !topRated) {
           throw new Error("Failed to fetch movies");
         }
