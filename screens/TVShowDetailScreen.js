@@ -229,8 +229,11 @@ export default function TVShowDetailScreen({ route }) {
                 profilePath: actor.profile_path,
               })),
               status: show.status,
-              networks: show.networks?.map((network) => network.name).join(", ") || "Unknown",
-              productionCountries: show.production_countries?.[0]?.iso_3166_1 || "Unknown",
+              networks:
+                show.networks?.map((network) => network.name).join(", ") ||
+                "Unknown",
+              productionCountries:
+                show.production_countries?.[0]?.iso_3166_1 || "Unknown",
               timestamp: Date.now(),
             };
 
@@ -313,6 +316,15 @@ export default function TVShowDetailScreen({ route }) {
 
   const scheduleReminder = async (showTitle, date) => {
     try {
+      // Check if selected date is in the past
+      if (date.getTime() <= new Date().getTime()) {
+        Alert.alert(
+          "Invalid Time",
+          "Please select a future time for the reminder"
+        );
+        return;
+      }
+
       const { status } = await Notifications.requestPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
@@ -336,10 +348,32 @@ export default function TVShowDetailScreen({ route }) {
         "Reminder set",
         `We'll remind you to watch ${showTitle} on ${date.toLocaleString()}`
       );
+      setIsReminderModalVisible(false);
     } catch (error) {
       console.error("Error setting reminder:", error);
       Alert.alert("Error", "Failed to set reminder. Please try again.");
     }
+  };
+
+  const setTimeToNextHour = () => {
+    const nextHour = new Date();
+    nextHour.setHours(nextHour.getHours() + 1, 0, 0, 0);
+    return nextHour;
+  };
+
+  const validateAndUpdateTime = (selectedDate) => {
+    const now = new Date();
+    if (
+      selectedDate.toDateString() === now.toDateString() &&
+      selectedDate.getTime() <= now.getTime()
+    ) {
+      Alert.alert(
+        "Invalid Time",
+        "Please select a future time for the reminder"
+      );
+      return setTimeToNextHour();
+    }
+    return selectedDate;
   };
 
   if (loading) {
@@ -467,7 +501,8 @@ export default function TVShowDetailScreen({ route }) {
                     {show.seasons[show.seasons.length - 1].name}
                   </Text>
                   <Text style={styles.episodeCount}>
-                    {show.seasons[show.seasons.length - 1].episode_count} Episodes
+                    {show.seasons[show.seasons.length - 1].episode_count}{" "}
+                    Episodes
                   </Text>
                   {show.seasons[show.seasons.length - 1].air_date && (
                     <Text style={styles.airDate}>
@@ -557,14 +592,22 @@ export default function TVShowDetailScreen({ route }) {
                   style={styles.imageButton}
                   onPress={() => handleImagePick("camera")}
                 >
-                  <Ionicons name="camera-outline" size={20} color={colors.primary} />
+                  <Ionicons
+                    name="camera-outline"
+                    size={20}
+                    color={colors.primary}
+                  />
                   <Text style={styles.imageButtonText}>Take Photo</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.imageButton}
                   onPress={() => handleImagePick("library")}
                 >
-                  <Ionicons name="image-outline" size={20} color={colors.primary} />
+                  <Ionicons
+                    name="image-outline"
+                    size={20}
+                    color={colors.primary}
+                  />
                   <Text style={styles.imageButtonText}>Choose Photo</Text>
                 </TouchableOpacity>
               </View>
@@ -669,15 +712,33 @@ export default function TVShowDetailScreen({ route }) {
                         value={reminderDate}
                         mode="date"
                         display="spinner"
+                        minimumDate={new Date()}
                         onChange={(event, selectedDate) => {
+                          setShowDatePicker(false);
                           if (selectedDate) {
+                            const now = new Date();
+                            const selected = new Date(selectedDate);
+
+                            // If selected date is today, ensure current time hasn't passed
+                            if (
+                              selected.toDateString() === now.toDateString()
+                            ) {
+                              const currentReminderTime = new Date(
+                                reminderDate
+                              );
+                              if (
+                                currentReminderTime.getTime() <= now.getTime()
+                              ) {
+                                setReminderDate(setTimeToNextHour());
+                                return;
+                              }
+                            }
                             setReminderDate(selectedDate);
                           }
                         }}
                         style={styles.picker}
                         textColor={colors.text}
                         themeVariant="light"
-                        minimumDate={new Date()}
                       />
                     </View>
                   )}
@@ -689,8 +750,11 @@ export default function TVShowDetailScreen({ route }) {
                         mode="time"
                         display="spinner"
                         onChange={(event, selectedDate) => {
+                          setShowTimePicker(false);
                           if (selectedDate) {
-                            setReminderDate(selectedDate);
+                            const validatedDate =
+                              validateAndUpdateTime(selectedDate);
+                            setReminderDate(validatedDate);
                           }
                         }}
                         style={styles.picker}
@@ -714,19 +778,35 @@ export default function TVShowDetailScreen({ route }) {
 
                 <View style={styles.modalButtons}>
                   <TouchableOpacity
-                    style={[styles.modalButton, { backgroundColor: colors.primary }]}
+                    style={[
+                      styles.modalButton,
+                      { backgroundColor: colors.primary },
+                    ]}
                     onPress={() => {
+                      const now = new Date();
+                      if (reminderDate.getTime() <= now.getTime()) {
+                        Alert.alert(
+                          "Invalid Time",
+                          "Please select a future time for the reminder"
+                        );
+                        setReminderDate(setTimeToNextHour());
+                        return;
+                      }
                       scheduleReminder(show.name, reminderDate);
-                      setIsReminderModalVisible(false);
                     }}
                   >
                     <Text style={styles.modalButtonText}>Set Reminder</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.modalButton, { backgroundColor: colors.surface }]}
+                    style={[
+                      styles.modalButton,
+                      { backgroundColor: colors.surface },
+                    ]}
                     onPress={() => setIsReminderModalVisible(false)}
                   >
-                    <Text style={[styles.modalButtonText, { color: colors.text }]}>
+                    <Text
+                      style={[styles.modalButtonText, { color: colors.text }]}
+                    >
                       Cancel
                     </Text>
                   </TouchableOpacity>
