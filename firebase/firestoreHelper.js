@@ -43,7 +43,7 @@ export async function getAllDocs(collectionName) {
       querySnapshot.forEach((docSnapshot) => {
         newArray.push({ id: docSnapshot.id, ...docSnapshot.data() });
       });
-      console.log("array from readDocs", newArray);
+      // console.log("array from readDocs", newArray);
     }
     return newArray;
   } catch (err) {
