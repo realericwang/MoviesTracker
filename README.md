@@ -8,12 +8,9 @@ Yichen Wang && Wangfan Qian
 
 # API (tmdb)
 
-**Pleaes copy and paste to your .env file to run.**
-
-  EXPO_PUBLIC_GOOGLE_PLACES_API_KEY="AIzaSyCjGEtGn-WORNo_dB_bZfpXVY305Q9fFiU"
-  EXPO_PUBLIC_TMDB_API_KEY="a80f392256d3c7c3005432ab07b19299"
+**Pleaes find and paste API in the assignment comment in Canvas to your .env file to run.**
   
-  # Firebase Rules:
+# Firebase Rules:
 
 ### Database:
 
