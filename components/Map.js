@@ -1,11 +1,12 @@
 import { useState } from "react";
 import MapView, { Marker } from "react-native-maps";
-import { StyleSheet, View, Text } from "react-native";
+import {StyleSheet, View, Text, Platform} from "react-native";
 import { fetchUserBookmarks } from "../firebase/firestoreHelper";
 import CountryCoordinates from "./common/CountryCoordinates";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { Animated } from "react-native";
+import {Platform as planform} from "expo-modules-core/src";
 const Map = ({ navigation }) => {
   const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
   const [countryMovieCounts, setCountryMovieCounts] = useState({});
@@ -153,17 +154,24 @@ const styles = StyleSheet.create({
   countryLabel: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
+    paddingHorizontal: planform.OS === "ios" ? 8 : 2,
     paddingVertical: 4,
     borderRadius: 12,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      },
+      android: {
+        elevation: 2, // Adjust elevation to reduce the shadow intensity
+      },
+    }),
   },
   selectedLabel: {
     borderWidth: 2,
