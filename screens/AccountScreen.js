@@ -56,11 +56,11 @@ const AccountScreen = () => {
       onPress: () =>
         user ? navigation.navigate("EditProfile") : handleLogin(),
     },
-    {
-      icon: "settings-outline",
-      title: "Settings",
-      onPress: () => navigation.navigate("Settings"),
-    },
+    // {
+    //   icon: "settings-outline",
+    //   title: "Settings",
+    //   onPress: () => navigation.navigate("Settings"),
+    // },
     {
       icon: "help-circle-outline",
       title: "Help & Support",
