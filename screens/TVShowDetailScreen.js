@@ -600,6 +600,142 @@ export default function TVShowDetailScreen({ route }) {
           </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
       </Modal>
+
+      <Modal
+        visible={isReminderModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsReminderModalVisible(false)}
+      >
+        <TouchableWithoutFeedback
+          onPress={() => setIsReminderModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Set Watch Reminder</Text>
+                <Text style={styles.modalDescription}>
+                  Choose when you'd like to be reminded to watch "{show.name}"
+                </Text>
+
+                <View style={styles.dateTimeContainer}>
+                  <TouchableOpacity
+                    style={styles.dateTimeButton}
+                    onPress={() => {
+                      setShowDatePicker(!showDatePicker);
+                      setShowTimePicker(false);
+                    }}
+                  >
+                    <View style={styles.dateTimeButtonContent}>
+                      <Ionicons
+                        name="calendar-outline"
+                        size={24}
+                        color={colors.primary}
+                      />
+                      <View style={styles.dateTimeTextContainer}>
+                        <Text style={styles.dateTimeLabel}>Date</Text>
+                        <Text style={styles.dateTimeValue}>
+                          {reminderDate.toLocaleDateString()}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.dateTimeButton}
+                    onPress={() => {
+                      setShowTimePicker(!showTimePicker);
+                      setShowDatePicker(false);
+                    }}
+                  >
+                    <View style={styles.dateTimeButtonContent}>
+                      <Ionicons
+                        name="time-outline"
+                        size={24}
+                        color={colors.primary}
+                      />
+                      <View style={styles.dateTimeTextContainer}>
+                        <Text style={styles.dateTimeLabel}>Time</Text>
+                        <Text style={styles.dateTimeValue}>
+                          {reminderDate.toLocaleTimeString()}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+
+                  {showDatePicker && (
+                    <View style={styles.pickerContainer}>
+                      <DateTimePicker
+                        value={reminderDate}
+                        mode="date"
+                        display="spinner"
+                        onChange={(event, selectedDate) => {
+                          if (selectedDate) {
+                            setReminderDate(selectedDate);
+                          }
+                        }}
+                        style={styles.picker}
+                        textColor={colors.text}
+                        themeVariant="light"
+                        minimumDate={new Date()}
+                      />
+                    </View>
+                  )}
+
+                  {showTimePicker && (
+                    <View style={styles.pickerContainer}>
+                      <DateTimePicker
+                        value={reminderDate}
+                        mode="time"
+                        display="spinner"
+                        onChange={(event, selectedDate) => {
+                          if (selectedDate) {
+                            setReminderDate(selectedDate);
+                          }
+                        }}
+                        style={styles.picker}
+                        textColor={colors.text}
+                        themeVariant="light"
+                      />
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.reminderPreview}>
+                  <Ionicons
+                    name="notifications-outline"
+                    size={20}
+                    color={colors.textSecondary}
+                  />
+                  <Text style={styles.reminderPreviewText}>
+                    Reminder will be set for {reminderDate.toLocaleString()}
+                  </Text>
+                </View>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, { backgroundColor: colors.primary }]}
+                    onPress={() => {
+                      scheduleReminder(show.name, reminderDate);
+                      setIsReminderModalVisible(false);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Set Reminder</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, { backgroundColor: colors.surface }]}
+                    onPress={() => setIsReminderModalVisible(false)}
+                  >
+                    <Text style={[styles.modalButtonText, { color: colors.text }]}>
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }
