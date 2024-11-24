@@ -91,3 +91,29 @@ export async function updateDocInDB(id, data, collectionName) {
     console.log("update doc in db", err);
   }
 }
+
+/**
+ * Fetches bookmarked movies for the currently authenticated user
+ * @returns {Promise<Array>} Array of bookmarked movies with their details
+ */
+export async function fetchUserBookmarks() {
+  try {
+    if (!auth.currentUser) {
+      return [];
+    }
+
+    const colRef = collection(database, "bookmarks");
+    const q = query(colRef, where("userId", "==", auth.currentUser.uid));
+    const querySnapshot = await getDocs(q);
+
+    let bookmarks = [];
+    querySnapshot.forEach((doc) => {
+      bookmarks.push({ id: doc.id, ...doc.data() });
+    });
+
+    return bookmarks;
+  } catch (error) {
+    console.error("Error fetching user bookmarks:", error);
+    return [];
+  }
+}

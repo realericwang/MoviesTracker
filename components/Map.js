@@ -1,17 +1,12 @@
-import { useEffect, useState } from "react";
-import MapView, { Callout, Marker } from "react-native-maps";
-import { StyleSheet, View, Text, ImageBackground } from "react-native";
-import Favicon from "../assets/favicon.png";
-import { fetchPopularMovies, getImageUrl } from "../api/tmdbApi";
-import { getAllDocs } from "../firebase/firestoreHelper";
-import { Image as RNImage } from "react-native";
+import { useState } from "react";
+import MapView, { Marker } from "react-native-maps";
+import { StyleSheet, View, Text } from "react-native";
+import { fetchUserBookmarks } from "../firebase/firestoreHelper";
 import CountryCoordinates from "./common/CountryCoordinates";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { Animated } from "react-native";
-
 const Map = ({ navigation }) => {
-  const [selectedLocation, setSelectedLocation] = useState(null);
   const [bookmarkedMovies, setBookmarkedMovies] = useState([]);
   const [countryMovieCounts, setCountryMovieCounts] = useState({});
   const [moviesByCountry, setMoviesByCountry] = useState({});
@@ -24,7 +19,7 @@ const Map = ({ navigation }) => {
     useCallback(() => {
       const loadBookmarkedMovies = async () => {
         try {
-          const movies = await getAllDocs("bookmarks");
+          const movies = await fetchUserBookmarks();
           setBookmarkedMovies(movies);
 
           // Group movies by country
