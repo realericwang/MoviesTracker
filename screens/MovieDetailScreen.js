@@ -33,6 +33,8 @@ import {
 import { where } from "firebase/firestore";
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import * as Notifications from "expo-notifications";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const { width } = Dimensions.get("window");
 
@@ -70,6 +72,11 @@ export default function MovieDetailScreen({ route }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const [reviewImage, setReviewImage] = useState(null);
+
+  const [isReminderModalVisible, setIsReminderModalVisible] = useState(false);
+  const [reminderDate, setReminderDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const fetchReviews = async () => {
     try {
@@ -329,6 +336,37 @@ export default function MovieDetailScreen({ route }) {
     }
   };
 
+  const scheduleReminder = async (movieTitle, date) => {
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission needed",
+          "Please enable notifications to set reminders"
+        );
+        return;
+      }
+
+      const trigger = date;
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Movie Reminder",
+          body: `Time to watch ${movieTitle}!`,
+          data: { movieId },
+        },
+        trigger,
+      });
+
+      Alert.alert(
+        "Reminder set",
+        `We'll remind you to watch ${movieTitle} on ${date.toLocaleString()}`
+      );
+    } catch (error) {
+      console.error("Error setting reminder:", error);
+      Alert.alert("Error", "Failed to set reminder. Please try again.");
+    }
+  };
+
   if (isLoading || !movie) {
     return (
       <View style={styles.loadingContainer}>
@@ -359,6 +397,32 @@ export default function MovieDetailScreen({ route }) {
               >
                 <Ionicons
                   name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                  size={24}
+                  color={colors.primary}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.bookmarkButton, { marginLeft: 10 }]}
+                onPress={() => {
+                  if (!user) {
+                    Alert.alert(
+                      "Login Required",
+                      "You need to login to set reminders",
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        {
+                          text: "Login",
+                          onPress: () => navigation.navigate("Auth"),
+                        },
+                      ]
+                    );
+                    return;
+                  }
+                  setIsReminderModalVisible(true);
+                }}
+              >
+                <Ionicons
+                  name="alarm-outline"
                   size={24}
                   color={colors.primary}
                 />
@@ -611,6 +675,150 @@ export default function MovieDetailScreen({ route }) {
               </View>
             </View>
           </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </Modal>
+      <Modal
+        visible={isReminderModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsReminderModalVisible(false)}
+      >
+        <TouchableWithoutFeedback
+          onPress={() => setIsReminderModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Set Watch Reminder</Text>
+                <Text style={styles.modalDescription}>
+                  Choose when you'd like to be reminded to watch "{movie.title}"
+                </Text>
+
+                <View style={styles.dateTimeContainer}>
+                  <TouchableOpacity
+                    style={styles.dateTimeButton}
+                    onPress={() => {
+                      setShowDatePicker(!showDatePicker);
+                      setShowTimePicker(false);
+                    }}
+                  >
+                    <View style={styles.dateTimeButtonContent}>
+                      <Ionicons
+                        name="calendar-outline"
+                        size={24}
+                        color={colors.primary}
+                      />
+                      <View style={styles.dateTimeTextContainer}>
+                        <Text style={styles.dateTimeLabel}>Date</Text>
+                        <Text style={styles.dateTimeValue}>
+                          {reminderDate.toLocaleDateString()}
+                        </Text>
+                      </View>
+                    </View>
+                    {showDatePicker && (
+                      <View style={styles.pickerContainer}>
+                        <DateTimePicker
+                          value={reminderDate}
+                          mode="date"
+                          display="spinner"
+                          minimumDate={new Date()}
+                          onChange={(event, selectedDate) => {
+                            if (selectedDate) {
+                              setReminderDate(selectedDate);
+                            }
+                          }}
+                          style={styles.picker}
+                          textColor={colors.text}
+                          themeVariant="light"
+                        />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.dateTimeButton}
+                    onPress={() => {
+                      setShowTimePicker(!showTimePicker);
+                      setShowDatePicker(false);
+                    }}
+                  >
+                    <View style={styles.dateTimeButtonContent}>
+                      <Ionicons
+                        name="time-outline"
+                        size={24}
+                        color={colors.primary}
+                      />
+                      <View style={styles.dateTimeTextContainer}>
+                        <Text style={styles.dateTimeLabel}>Time</Text>
+                        <Text style={styles.dateTimeValue}>
+                          {reminderDate.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </Text>
+                      </View>
+                    </View>
+                    {showTimePicker && (
+                      <View style={styles.pickerContainer}>
+                        <DateTimePicker
+                          value={reminderDate}
+                          mode="time"
+                          display="spinner"
+                          onChange={(event, selectedDate) => {
+                            if (selectedDate) {
+                              setReminderDate(selectedDate);
+                            }
+                          }}
+                          style={styles.picker}
+                          textColor={colors.text}
+                          themeVariant="light"
+                        />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.reminderPreview}>
+                  <Ionicons
+                    name="notifications-outline"
+                    size={20}
+                    color={colors.textSecondary}
+                  />
+                  <Text style={styles.reminderPreviewText}>
+                    Reminder will be set for {reminderDate.toLocaleString()}
+                  </Text>
+                </View>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={[
+                      styles.modalButton,
+                      { backgroundColor: colors.primary },
+                    ]}
+                    onPress={() => {
+                      scheduleReminder(movie.title, reminderDate);
+                      setIsReminderModalVisible(false);
+                    }}
+                  >
+                    <Text style={styles.modalButtonText}>Set Reminder</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.modalButton,
+                      { backgroundColor: colors.surface },
+                    ]}
+                    onPress={() => setIsReminderModalVisible(false)}
+                  >
+                    <Text
+                      style={[styles.modalButtonText, { color: colors.text }]}
+                    >
+                      Cancel
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
         </TouchableWithoutFeedback>
       </Modal>
     </View>
@@ -965,5 +1173,64 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 8,
     marginTop: spacing.md,
+  },
+  dateTimeContainer: {
+    marginBottom: spacing.lg,
+  },
+  dateTimeButton: {
+    backgroundColor: `${colors.primary}10`,
+    borderRadius: 12,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: `${colors.primary}30`,
+    backgroundColor: colors.background,
+  },
+  dateTimeButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  dateTimeTextContainer: {
+    marginLeft: spacing.md,
+  },
+  dateTimeLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 2,
+  },
+  dateTimeValue: {
+    fontSize: 16,
+    color: colors.text,
+    fontWeight: "500",
+  },
+  reminderPreview: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: `${colors.surface}80`,
+    padding: spacing.md,
+    borderRadius: 8,
+    marginBottom: spacing.lg,
+  },
+  reminderPreviewText: {
+    color: colors.textSecondary,
+    marginLeft: spacing.sm,
+    fontSize: 14,
+  },
+  modalDescription: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    marginBottom: spacing.lg,
+  },
+  pickerContainer: {
+    marginTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: `${colors.primary}30`,
+    paddingTop: spacing.sm,
+    backgroundColor: colors.background,
+  },
+  picker: {
+    height: 120,
+    marginHorizontal: -spacing.md,
+    backgroundColor: colors.background,
   },
 });
