@@ -5,11 +5,35 @@ import {
   Image,
   ScrollView,
   StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  Modal,
+  TextInput,
+  Alert,
   ActivityIndicator,
+  Keyboard,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing } from "../styles/globalStyles";
 import { fetchTVShowDetails, getImageUrl } from "../api/tmdbApi";
+import { useNavigation } from "@react-navigation/native";
+import { auth } from "../firebase/firebaseSetup";
+import {
+  writeToDB,
+  deleteFromDB,
+  updateDocInDB,
+  getDocsByQueries,
+} from "../firebase/firestoreHelper";
+import { where } from "firebase/firestore";
+import * as ImagePicker from "expo-image-picker";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import * as Notifications from "expo-notifications";
+import DateTimePicker from "@react-native-community/datetimepicker";
+
+const { width } = Dimensions.get("window");
 /**
  * TVShowDetailScreen component to display details of a TV show.
  *
@@ -25,6 +49,19 @@ export default function TVShowDetailScreen({ route }) {
   const { showId } = route.params;
   const [show, setShow] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarksID, setBookmarksID] = useState(null);
+  const navigation = useNavigation();
+  const [reviews, setReviews] = useState([]);
+  const [userReview, setUserReview] = useState(null);
+  const [reviewText, setReviewText] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const user = auth.currentUser;
+  const [reviewImage, setReviewImage] = useState(null);
+  const [isReminderModalVisible, setIsReminderModalVisible] = useState(false);
+  const [reminderDate, setReminderDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   useEffect(() => {
     const loadShowDetails = async () => {
@@ -38,7 +75,249 @@ export default function TVShowDetailScreen({ route }) {
       }
     };
     loadShowDetails();
+    fetchReviews();
+    checkIfBookmarked();
   }, [showId]);
+
+  useEffect(() => {
+    if (isModalVisible) {
+      setReviewText(userReview ? userReview.text : "");
+    }
+  }, [isModalVisible]);
+
+  const fetchReviews = async () => {
+    try {
+      const reviewsData = await getDocsByQueries("tvshowreviews", [
+        where("showId", "==", showId),
+      ]);
+      reviewsData.sort((a, b) => b.timestamp - a.timestamp);
+      setReviews(reviewsData);
+      if (user) {
+        const existingReview = reviewsData.find(
+          (review) => review.userId === user.uid
+        );
+        setUserReview(existingReview || null);
+      } else {
+        setUserReview(null);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (!user) {
+      navigation.navigate("Auth");
+      return;
+    }
+    try {
+      let imageUrl = null;
+      if (reviewImage) {
+        const response = await fetch(reviewImage);
+        const blob = await response.blob();
+        const storage = getStorage();
+        const imageRef = ref(
+          storage,
+          `tvshow_review_images/${user.uid}/${Date.now()}`
+        );
+        await uploadBytes(imageRef, blob);
+        imageUrl = await getDownloadURL(imageRef);
+      }
+
+      const reviewData = {
+        showId,
+        userId: user.uid,
+        userName: user.displayName || "Anonymous",
+        text: reviewText,
+        timestamp: Date.now(),
+        imageUrl,
+      };
+
+      if (userReview) {
+        await updateDocInDB(
+          userReview.id,
+          {
+            text: reviewText,
+            timestamp: Date.now(),
+            imageUrl: imageUrl || userReview.imageUrl,
+          },
+          "tvshowreviews"
+        );
+      } else {
+        await writeToDB(reviewData, "tvshowreviews");
+      }
+      setIsModalVisible(false);
+      setReviewImage(null);
+      await fetchReviews();
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      Alert.alert("Error", "Failed to submit review. Please try again.");
+    }
+  };
+
+  const handleDeleteReview = async () => {
+    try {
+      await deleteFromDB(userReview.id, "tvshowreviews");
+      setIsModalVisible(false);
+      await fetchReviews();
+    } catch (error) {
+      console.error("Error deleting review:", error);
+    }
+  };
+
+  const handleBookmarkPress = async () => {
+    if (!user) {
+      Alert.alert("Login Required", "You need to login to bookmark TV shows", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Login", onPress: () => navigation.navigate("Auth") },
+      ]);
+      return;
+    }
+
+    try {
+      if (isBookmarked) {
+        setIsBookmarked(false);
+        const bookmarkIdToDelete = bookmarksID;
+        setBookmarksID(null);
+
+        try {
+          await deleteFromDB(bookmarkIdToDelete, "tvshowbookmarks");
+        } catch (error) {
+          console.error("Error deleting bookmark:", error);
+          setIsBookmarked(true);
+          setBookmarksID(bookmarkIdToDelete);
+        }
+      } else {
+        setIsBookmarked(true);
+
+        try {
+          const existingBookmark = await getDocsByQueries(
+            "tvshowbookmarks",
+            [where("showId", "==", showId), where("userId", "==", user.uid)],
+            true
+          );
+          if (!existingBookmark) {
+            const data = {
+              showId,
+              userId: user.uid,
+              userName: user.displayName || "Anonymous",
+              showTitle: show.name,
+              posterPath: show.poster_path,
+              backdropPath: show.backdrop_path,
+              firstAirDate: show.first_air_date,
+              genres: show.genres?.map((g) => g.name).join(", "),
+              numberOfSeasons: show.number_of_seasons,
+              voteAverage: show.vote_average,
+              overview: show.overview,
+              timestamp: Date.now(),
+            };
+
+            await writeToDB(data, "tvshowbookmarks");
+
+            const bookmarkData = await getDocsByQueries(
+              "tvshowbookmarks",
+              [where("showId", "==", showId), where("userId", "==", user.uid)],
+              true
+            );
+            setBookmarksID(bookmarkData.id);
+          }
+        } catch (error) {
+          console.error("Error adding bookmark:", error);
+          setIsBookmarked(false);
+          setBookmarksID(null);
+        }
+      }
+    } catch (error) {
+      console.error("Error handling bookmark:", error);
+    }
+  };
+
+  const checkIfBookmarked = async () => {
+    if (!user) return;
+    try {
+      const bookmarkData = await getDocsByQueries(
+        "tvshowbookmarks",
+        [where("showId", "==", showId), where("userId", "==", user.uid)],
+        true
+      );
+      if (bookmarkData && bookmarkData.userId === user.uid) {
+        setIsBookmarked(true);
+        setBookmarksID(bookmarkData.id);
+      } else {
+        setIsBookmarked(false);
+        setBookmarksID(null);
+      }
+    } catch (error) {
+      console.error("Error checking bookmark status:", error);
+    }
+  };
+
+  const handleImagePick = async (type) => {
+    try {
+      let result;
+      if (type === "camera") {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== "granted") {
+          Alert.alert(
+            "Permission needed",
+            "Camera permission is required to take photos"
+          );
+          return;
+        }
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: "images",
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.2,
+        });
+      } else {
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: "images",
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.3,
+        });
+      }
+
+      if (!result.canceled) {
+        setReviewImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to pick image. Please try again.");
+    }
+  };
+
+  const scheduleReminder = async (showTitle, date) => {
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission needed",
+          "Please enable notifications to set reminders"
+        );
+        return;
+      }
+
+      const trigger = date;
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "TV Show Reminder",
+          body: `Time to watch ${showTitle}!`,
+          data: { showId },
+        },
+        trigger,
+      });
+
+      Alert.alert(
+        "Reminder set",
+        `We'll remind you to watch ${showTitle} on ${date.toLocaleString()}`
+      );
+    } catch (error) {
+      console.error("Error setting reminder:", error);
+      Alert.alert("Error", "Failed to set reminder. Please try again.");
+    }
+  };
 
   if (loading) {
     return (
@@ -57,87 +336,248 @@ export default function TVShowDetailScreen({ route }) {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Image
-        source={{ uri: getImageUrl(show.backdrop_path) }}
-        style={styles.backdrop}
-      />
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
+        <Image
+          source={{ uri: getImageUrl(show.backdrop_path) }}
+          style={styles.backdrop}
+        />
+        <View style={styles.headerOverlay} />
 
-      <View style={styles.details}>
-        <Text style={styles.title}>{show.name}</Text>
-
-        <View style={styles.metadata}>
-          <Text style={styles.year}>
-            {new Date(show.first_air_date).getFullYear()}
-          </Text>
-          <Text style={styles.episodes}>
-            {show.number_of_seasons} Season
-            {show.number_of_seasons !== 1 ? "s" : ""}
-          </Text>
-          <View style={styles.rating}>
-            <Ionicons name="star" size={16} color="#FFD700" />
-            <Text style={styles.ratingText}>
-              {show.vote_average.toFixed(1)}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.genres}>
-          {show.genres.map((genre) => (
-            <View key={genre.id} style={styles.genreTag}>
-              <Text style={styles.genreText}>{genre.name}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Overview</Text>
-          <Text style={styles.overviewText}>{show.overview}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Cast</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {show.credits?.cast?.slice(0, 10).map((actor) => (
-              <View key={actor.id} style={styles.castMember}>
-                <Image
-                  source={{ uri: getImageUrl(actor.profile_path) }}
-                  style={styles.castImage}
+        <View style={styles.content}>
+          <View style={styles.posterContainer}>
+            <Image
+              source={{ uri: getImageUrl(show.poster_path) }}
+              style={styles.poster}
+            />
+            <View style={styles.actions}>
+              <TouchableOpacity
+                style={styles.bookmarkButton}
+                onPress={handleBookmarkPress}
+              >
+                <Ionicons
+                  name={isBookmarked ? "bookmark" : "bookmark-outline"}
+                  size={24}
+                  color={colors.primary}
                 />
-                <Text style={styles.castName} numberOfLines={2}>
-                  {actor.name}
-                </Text>
-                <Text style={styles.characterName} numberOfLines={1}>
-                  {actor.character}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.bookmarkButton, { marginLeft: 10 }]}
+                onPress={() => {
+                  if (!user) {
+                    Alert.alert(
+                      "Login Required",
+                      "You need to login to set reminders",
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        {
+                          text: "Login",
+                          onPress: () => navigation.navigate("Auth"),
+                        },
+                      ]
+                    );
+                    return;
+                  }
+                  setIsReminderModalVisible(true);
+                }}
+              >
+                <Ionicons
+                  name="alarm-outline"
+                  size={24}
+                  color={colors.primary}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={styles.details}>
+            <Text style={styles.title}>{show.name}</Text>
+            <View style={styles.metadata}>
+              <Text style={styles.year}>
+                {new Date(show.first_air_date).getFullYear()}
+              </Text>
+              <Text style={styles.episodes}>
+                {show.number_of_seasons} Season
+                {show.number_of_seasons !== 1 ? "s" : ""}
+              </Text>
+              <View style={styles.rating}>
+                <Ionicons name="star" size={16} color="#FFD700" />
+                <Text style={styles.ratingText}>
+                  {show.vote_average.toFixed(1)}
                 </Text>
               </View>
-            ))}
-          </ScrollView>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Latest Season</Text>
-          {show.seasons?.length > 0 && (
-            <View style={styles.seasonInfo}>
-              <Text style={styles.seasonTitle}>
-                {show.seasons[show.seasons.length - 1].name}
-              </Text>
-              <Text style={styles.episodeCount}>
-                {show.seasons[show.seasons.length - 1].episode_count} Episodes
-              </Text>
-              {show.seasons[show.seasons.length - 1].air_date && (
-                <Text style={styles.airDate}>
-                  Aired:{" "}
-                  {new Date(
-                    show.seasons[show.seasons.length - 1].air_date
-                  ).toLocaleDateString()}
-                </Text>
+            </View>
+            <View style={styles.genres}>
+              {show.genres.map((genre) => (
+                <View key={genre.id} style={styles.genreTag}>
+                  <Text style={styles.genreText}>{genre.name}</Text>
+                </View>
+              ))}
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Overview</Text>
+              <Text style={styles.overviewText}>{show.overview}</Text>
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Cast</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {show.credits?.cast?.slice(0, 10).map((actor) => (
+                  <View key={actor.id} style={styles.castMember}>
+                    <Image
+                      source={{ uri: getImageUrl(actor.profile_path) }}
+                      style={styles.castImage}
+                    />
+                    <Text style={styles.castName} numberOfLines={2}>
+                      {actor.name}
+                    </Text>
+                    <Text style={styles.characterName} numberOfLines={1}>
+                      {actor.character}
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Latest Season</Text>
+              {show.seasons?.length > 0 && (
+                <View style={styles.seasonInfo}>
+                  <Text style={styles.seasonTitle}>
+                    {show.seasons[show.seasons.length - 1].name}
+                  </Text>
+                  <Text style={styles.episodeCount}>
+                    {show.seasons[show.seasons.length - 1].episode_count} Episodes
+                  </Text>
+                  {show.seasons[show.seasons.length - 1].air_date && (
+                    <Text style={styles.airDate}>
+                      Aired:{" "}
+                      {new Date(
+                        show.seasons[show.seasons.length - 1].air_date
+                      ).toLocaleDateString()}
+                    </Text>
+                  )}
+                </View>
               )}
             </View>
-          )}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Reviews</Text>
+              {reviews.length === 0 ? (
+                <Text style={styles.noReviewsText}>No reviews yet</Text>
+              ) : (
+                reviews.map((review) => (
+                  <View key={review.id} style={styles.reviewContainer}>
+                    <Text style={styles.reviewUser}>{review.userName}</Text>
+                    <Text style={styles.reviewTimestamp}>
+                      {new Date(review.timestamp).toLocaleDateString()}
+                    </Text>
+                    <Text style={styles.reviewText}>{review.text}</Text>
+                    {review.imageUrl && (
+                      <Image
+                        source={{ uri: review.imageUrl }}
+                        style={styles.reviewImage}
+                      />
+                    )}
+                  </View>
+                ))
+              )}
+            </View>
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+
+      <TouchableOpacity
+        style={styles.floatingButton}
+        onPress={() => setIsModalVisible(true)}
+      >
+        <Ionicons name="create-outline" size={24} color="#fff" />
+      </TouchableOpacity>
+
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.modalContainer}
+          >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>
+                {userReview ? "Edit Review" : "Write a Review"}
+              </Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Write your review here..."
+                placeholderTextColor={colors.textSecondary}
+                multiline
+                value={reviewText}
+                onChangeText={setReviewText}
+              />
+
+              {reviewImage && (
+                <View style={styles.imagePreviewContainer}>
+                  <Image
+                    source={{ uri: reviewImage }}
+                    style={styles.imagePreview}
+                  />
+                  <TouchableOpacity
+                    style={styles.removeImageButton}
+                    onPress={() => setReviewImage(null)}
+                  >
+                    <Ionicons name="close-circle" size={24} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <View style={styles.imageButtons}>
+                <TouchableOpacity
+                  style={styles.imageButton}
+                  onPress={() => handleImagePick("camera")}
+                >
+                  <Ionicons name="camera-outline" size={20} color={colors.primary} />
+                  <Text style={styles.imageButtonText}>Take Photo</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.imageButton}
+                  onPress={() => handleImagePick("library")}
+                >
+                  <Ionicons name="image-outline" size={20} color={colors.primary} />
+                  <Text style={styles.imageButtonText}>Choose Photo</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={handleSubmitReview}
+                >
+                  <Text style={styles.modalButtonText}>
+                    {userReview ? "Update" : "Submit"}
+                  </Text>
+                </TouchableOpacity>
+                {userReview && (
+                  <TouchableOpacity
+                    style={[styles.modalButton, { backgroundColor: "red" }]}
+                    onPress={handleDeleteReview}
+                  >
+                    <Text style={styles.modalButtonText}>Delete</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => {
+                    setIsModalVisible(false);
+                    setReviewImage(null);
+                  }}
+                >
+                  <Text style={styles.modalButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </View>
   );
 }
 
@@ -264,5 +704,213 @@ const styles = StyleSheet.create({
   airDate: {
     fontSize: 14,
     color: colors.textSecondary,
+  },
+  floatingButton: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: spacing.lg,
+    maxHeight: "80%",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  textInput: {
+    height: 100,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: spacing.md,
+    textAlignVertical: "top",
+    marginBottom: spacing.md,
+    color: colors.text,
+    backgroundColor: `${colors.surface}50`,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  modalButton: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    padding: spacing.md,
+    borderRadius: 8,
+    alignItems: "center",
+    marginHorizontal: spacing.xs,
+  },
+  modalButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  noReviewsText: {
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginTop: spacing.md,
+    fontSize: 14,
+    fontStyle: "italic",
+    opacity: 0.8,
+  },
+  reviewContainer: {
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: `${colors.primary}15`,
+  },
+  reviewUser: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.text,
+    marginBottom: 2,
+  },
+  reviewTimestamp: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    marginBottom: spacing.sm,
+    fontWeight: "500",
+  },
+  reviewText: {
+    color: colors.text,
+    lineHeight: 22,
+    fontSize: 14,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  reviewsSection: {
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
+  },
+  imagePreviewContainer: {
+    marginVertical: spacing.md,
+    position: "relative",
+  },
+  imagePreview: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginBottom: spacing.md,
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 12,
+  },
+  imageButtons: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: spacing.md,
+  },
+  imageButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: spacing.sm,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  imageButtonText: {
+    color: colors.primary,
+    marginLeft: spacing.xs,
+    fontSize: 14,
+  },
+  reviewImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginTop: spacing.md,
+  },
+  dateTimeContainer: {
+    marginBottom: spacing.lg,
+  },
+  dateTimeButton: {
+    backgroundColor: `${colors.primary}10`,
+    borderRadius: 12,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: `${colors.primary}30`,
+    backgroundColor: colors.background,
+  },
+  dateTimeButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  dateTimeTextContainer: {
+    marginLeft: spacing.md,
+  },
+  dateTimeLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 2,
+  },
+  dateTimeValue: {
+    fontSize: 16,
+    color: colors.text,
+    fontWeight: "500",
+  },
+  reminderPreview: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: `${colors.surface}80`,
+    padding: spacing.md,
+    borderRadius: 8,
+    marginBottom: spacing.lg,
+  },
+  reminderPreviewText: {
+    color: colors.textSecondary,
+    marginLeft: spacing.sm,
+    fontSize: 14,
+  },
+  modalDescription: {
+    color: colors.textSecondary,
+    fontSize: 14,
+    marginBottom: spacing.lg,
+  },
+  pickerContainer: {
+    marginTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: `${colors.primary}30`,
+    paddingTop: spacing.sm,
+    backgroundColor: colors.background,
+  },
+  picker: {
+    height: 120,
+    marginHorizontal: -spacing.md,
+    backgroundColor: colors.background,
   },
 });
