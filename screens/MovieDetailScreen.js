@@ -1207,7 +1207,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderWidth: 1,
     borderColor: `${colors.primary}30`,
-    backgroundColor: colors.background,
   },
   dateTimeButtonContent: {
     flexDirection: "row",
