@@ -825,11 +825,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
@@ -1103,7 +1098,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderWidth: 1,
     borderColor: `${colors.primary}30`,
-    backgroundColor: colors.background,
   },
   dateTimeButtonContent: {
     flexDirection: "row",

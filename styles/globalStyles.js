@@ -12,6 +12,7 @@ export const colors = {
   error: "#EF4444",
   success: "#10B981",
   dark: "#0F172A",
+  white: "#FFFFFF",
 };
 
 // Define common spacing
