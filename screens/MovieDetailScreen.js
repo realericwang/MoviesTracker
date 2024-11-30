@@ -621,6 +621,11 @@ export default function MovieDetailScreen({route}) {
                                                     if (event.type === "set" && date) {
                                                         const currentDate = new Date(reminderDate);
                                                         currentDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+                                                        // Validate the combined date and time
+                                                        if (currentDate.getTime() <= new Date().getTime()) {
+                                                            Alert.alert("Invalid Date", "You must pick a future time");
+                                                            return;
+                                                        }
                                                         setReminderDate(currentDate);
                                                     }
                                                 },
@@ -657,6 +662,11 @@ export default function MovieDetailScreen({route}) {
                                                     if (date) {
                                                         const currentDate = new Date(reminderDate);
                                                         currentDate.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+                                                        // Validate the combined date and time
+                                                        if (currentDate.getTime() <= new Date().getTime()) {
+                                                            Alert.alert("Invalid Date", "You must pick a future time");
+                                                            return;
+                                                        }
                                                         setReminderDate(currentDate);
                                                     }
                                                 }}
