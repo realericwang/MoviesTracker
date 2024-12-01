@@ -45,10 +45,10 @@ const AboutScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>About MoviesTracker</Text>
           <Text style={styles.description}>
-            MoviesTracker is your personal film companion, designed to transform how
-            you experience and share your cinematic adventures. Our app offers a
-            rich, immersive way to discover, track, and remember each film you
-            watch.
+            MoviesTracker is your personal film companion, designed to transform
+            how you experience and share your cinematic adventures. Our app
+            offers a rich, immersive way to discover, track, and remember each
+            film you watch.
           </Text>
         </View>
 
@@ -65,11 +65,7 @@ const AboutScreen = () => {
             onPress={() => handleLinkPress("https://www.themoviedb.org")}
           >
             <Text style={styles.linkText}>The Movie Database (TMDB)</Text>
-            <Ionicons 
-              name="open-outline" 
-              size={16} 
-              color={colors.primary} 
-            />
+            <Ionicons name="open-outline" size={16} color={colors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -77,24 +73,28 @@ const AboutScreen = () => {
           <Text style={styles.sectionTitle}>Legal</Text>
           <TouchableOpacity
             style={styles.linkButton}
-            onPress={() => handleLinkPress("https://www.themoviedb.org/terms-of-use")}
+            onPress={() =>
+              handleLinkPress("https://www.themoviedb.org/terms-of-use")
+            }
           >
             <Text style={styles.linkText}>Terms of Service</Text>
-            <Ionicons 
-              name="chevron-forward" 
-              size={20} 
-              color={colors.textSecondary} 
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.textSecondary}
             />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.linkButton}
-            onPress={() => handleLinkPress("https://www.themoviedb.org/privacy-policy")}
+            onPress={() =>
+              handleLinkPress("https://www.themoviedb.org/privacy-policy")
+            }
           >
             <Text style={styles.linkText}>Privacy Policy</Text>
-            <Ionicons 
-              name="chevron-forward" 
-              size={20} 
-              color={colors.textSecondary} 
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={colors.textSecondary}
             />
           </TouchableOpacity>
         </View>
