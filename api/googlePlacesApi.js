@@ -1,5 +1,5 @@
 const GOOGLE_PLACES_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
-const BASE_URL = 'https://maps.googleapis.com/maps/api/place';
+const BASE_URL = "https://maps.googleapis.com/maps/api/place";
 
 /**
  * Fetches nearby cinemas using the Google Places API
@@ -8,19 +8,23 @@ const BASE_URL = 'https://maps.googleapis.com/maps/api/place';
  * @param {number} radius - Search radius in meters (default: 5000)
  * @returns {Promise<Array>} Array of cinema objects
  */
-export const fetchNearbyCinemas = async (latitude, longitude, radius = 5000) => {
+export const fetchNearbyCinemas = async (
+  latitude,
+  longitude,
+  radius = 5000
+) => {
   try {
     const url = `${BASE_URL}/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=movie_theater&key=${GOOGLE_PLACES_API_KEY}`;
     const response = await fetch(url);
     const data = await response.json();
-    
+
     if (!response.ok) {
-      throw new Error(data.error_message || 'Failed to fetch cinemas');
+      throw new Error(data.error_message || "Failed to fetch cinemas");
     }
-    
+
     return data.results || [];
   } catch (error) {
-    console.error('Error fetching cinemas:', error);
+    console.error("Error fetching cinemas:", error);
     return [];
   }
 };
@@ -36,14 +40,14 @@ export const getCinemaDetails = async (placeId) => {
       `${BASE_URL}/details/json?place_id=${placeId}&fields=name,rating,formatted_phone_number,formatted_address,opening_hours,website,reviews&key=${GOOGLE_PLACES_API_KEY}`
     );
     const data = await response.json();
-    
+
     if (!response.ok) {
-      throw new Error(data.error_message || 'Failed to fetch cinema details');
+      throw new Error(data.error_message || "Failed to fetch cinema details");
     }
-    
+
     return data.result;
   } catch (error) {
-    console.error('Error fetching cinema details:', error);
+    console.error("Error fetching cinema details:", error);
     return null;
   }
-}; 
+};
