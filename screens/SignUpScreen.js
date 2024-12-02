@@ -31,6 +31,54 @@ const SignUpScreen = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({
+    score: 0,
+    message: "",
+    color: colors.error,
+  });
+
+  const checkPasswordStrength = (password) => {
+    let score = 0;
+    let message = "";
+    let color = colors.error;
+
+    // Length check
+    if (password.length >= 8) score += 1;
+
+    // Complexity checks
+    if (/[A-Z]/.test(password)) score += 1; // Has uppercase
+    if (/[a-z]/.test(password)) score += 1; // Has lowercase
+    if (/[0-9]/.test(password)) score += 1; // Has number
+    if (/[^A-Za-z0-9]/.test(password)) score += 1; // Has special char
+
+    // Set message and color based on score
+    switch (score) {
+      case 0:
+      case 1:
+        message = "Very Weak";
+        color = colors.error;
+        break;
+      case 2:
+        message = "Weak";
+        color = "#FFA500"; // Orange
+        break;
+      case 3:
+        message = "Medium";
+        color = "#FFD700"; // Gold
+        break;
+      case 4:
+        message = "Strong";
+        color = "#90EE90"; // Light green
+        break;
+      case 5:
+        message = "Very Strong";
+        color = colors.success;
+        break;
+    }
+
+    setPasswordStrength({ score, message, color });
+    return score;
+  };
 
   const handleSignUp = async () => {
     if (!email || !password || !confirmPassword) {
@@ -43,27 +91,47 @@ const SignUpScreen = ({ navigation }) => {
       return;
     }
 
-    // Additional checks for email and password validity
+    // Email validation
     if (!/^\S+@\S+\.\S+$/.test(email)) {
       Alert.alert("Error", "Please enter a valid email address.");
       return;
     }
-    if (password.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters long.");
+
+    // Enhanced password validation
+    const strengthScore = checkPasswordStrength(password);
+    if (strengthScore < 3) {
+      Alert.alert(
+        "Weak Password",
+        "Your password is not strong enough. Please include:\n" +
+          "• At least 8 characters\n" +
+          "• Uppercase and lowercase letters\n" +
+          "• Numbers\n" +
+          "• Special characters (!@#$%^&*)",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Use Anyway",
+            onPress: () => performSignUp(),
+            style: "destructive",
+          },
+        ]
+      );
       return;
     }
 
+    performSignUp();
+  };
+
+  const performSignUp = async () => {
     setLoading(true);
     try {
       const { user, error } = await signUp(email, password);
       if (error) {
-        // Assuming `error` is a string; if it's an object, you may need to adjust this
         Alert.alert("Error", error);
       } else {
         navigation.navigate("Account");
       }
     } catch (error) {
-      // More detailed error based on the type of exception
       console.error("SignUp Error: ", error);
       const message = error.code
         ? error.message
@@ -95,14 +163,44 @@ const SignUpScreen = ({ navigation }) => {
           editable={!loading}
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          editable={!loading}
-        />
+        <View>
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            value={password}
+            onChangeText={(text) => {
+              setPassword(text);
+              checkPasswordStrength(text);
+            }}
+            secureTextEntry
+            editable={!loading}
+          />
+          {password.length > 0 && (
+            <View style={styles.passwordStrengthContainer}>
+              <View style={styles.strengthBar}>
+                {[1, 2, 3, 4, 5].map((index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.strengthSegment,
+                      {
+                        backgroundColor:
+                          index <= passwordStrength.score
+                            ? passwordStrength.color
+                            : colors.border,
+                      },
+                    ]}
+                  />
+                ))}
+              </View>
+              <Text
+                style={[styles.strengthText, { color: passwordStrength.color }]}
+              >
+                {passwordStrength.message}
+              </Text>
+            </View>
+          )}
+        </View>
 
         <TextInput
           style={styles.input}
@@ -187,6 +285,25 @@ const styles = StyleSheet.create({
     left: spacing.lg,
     padding: spacing.sm,
     zIndex: 1,
+  },
+  passwordStrengthContainer: {
+    marginTop: -spacing.sm,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.xs,
+  },
+  strengthBar: {
+    flexDirection: "row",
+    height: 4,
+    marginBottom: spacing.xs,
+  },
+  strengthSegment: {
+    flex: 1,
+    marginHorizontal: 2,
+    borderRadius: 2,
+  },
+  strengthText: {
+    fontSize: 12,
+    textAlign: "right",
   },
 });
 
