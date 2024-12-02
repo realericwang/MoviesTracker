@@ -59,6 +59,7 @@ const { width } = Dimensions.get("window");
 export default function MovieDetailScreen({ route }) {
   const { movieId } = route.params;
   const [movie, setMovie] = useState(null);
+  const [isReminderSet, setIsReminderSet] = useState(false);
 
   /* bookmark related */
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -368,6 +369,8 @@ export default function MovieDetailScreen({ route }) {
         trigger,
       });
 
+      setIsReminderSet(true); // Update the state here
+
       Alert.alert(
         "Reminder set",
         `We'll remind you to watch ${movieTitle} on ${date.toLocaleString()}`
@@ -436,9 +439,9 @@ export default function MovieDetailScreen({ route }) {
                 }}
               >
                 <Ionicons
-                  name="alarm-outline"
+                  name={isReminderSet ? "alarm" : "alarm-outline"}
                   size={24}
-                  color={colors.primary}
+                  color={isReminderSet ? colors.error : colors.dark}
                 />
               </TouchableOpacity>
             </View>
