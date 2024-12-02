@@ -78,14 +78,10 @@ export default function HomeScreen() {
     [navigation]
   );
 
-  const renderScene = useMemo(
-    () =>
-      SceneMap({
-        movies: Movies,
-        tvshows: TVShows,
-      }),
-    []
-  );
+  const renderScene = SceneMap({
+    movies: () => <Movies />,
+    tvshows: () => <TVShows />,
+  });
 
   const renderTabBar = useCallback(
     (props) => (
@@ -93,9 +89,10 @@ export default function HomeScreen() {
         {...props}
         indicatorStyle={{ backgroundColor: colors.primary }}
         style={{ backgroundColor: colors.background }}
-        labelStyle={{ color: colors.text }}
+        labelStyle={{ color: colors.text, textTransform: "none" }}
         activeColor={colors.primary}
         inactiveColor={colors.textSecondary}
+        pressColor={`${colors.primary}20`}
       />
     ),
     []
