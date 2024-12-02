@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { colors, spacing } from "../styles/globalStyles";
 import { signUp } from "../firebase/authHelper";
+import { Ionicons } from "@expo/vector-icons";
 
 /**
  * SignUpScreen Component
@@ -76,6 +77,12 @@ const SignUpScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.formContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
         <Text style={styles.title}>Create Account</Text>
 
         <TextInput
@@ -173,6 +180,13 @@ const styles = StyleSheet.create({
     color: colors.primary,
     textAlign: "center",
     marginTop: spacing.lg,
+  },
+  backButton: {
+    position: "absolute",
+    top: spacing.lg,
+    left: spacing.lg,
+    padding: spacing.sm,
+    zIndex: 1,
   },
 });
 
