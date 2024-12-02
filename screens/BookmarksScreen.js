@@ -53,18 +53,23 @@ export default function BookmarksScreen() {
    * Sets the `bookmarkedMovies` state with the fetched data.
    */
   const loadBookmarkedMovies = async () => {
-    if (!user) {
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
       setBookmarkedMovies([]);
       setBookmarkedTVShows([]);
       setCombinedBookmarks([]);
       setIsLoading(false);
       return;
     }
+
     try {
       setError(null);
       const [moviesData, tvShowsData] = await Promise.all([
-        getDocsByQueries("bookmarks", [where("userId", "==", user.uid)]),
-        getDocsByQueries("tvshowbookmarks", [where("userId", "==", user.uid)]),
+        getDocsByQueries("bookmarks", [where("userId", "==", currentUser.uid)]),
+        getDocsByQueries("tvshowbookmarks", [
+          where("userId", "==", currentUser.uid),
+        ]),
       ]);
 
       setBookmarkedMovies(moviesData);
@@ -110,6 +115,12 @@ export default function BookmarksScreen() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (!currentUser) {
+        setBookmarkedMovies([]);
+        setBookmarkedTVShows([]);
+        setCombinedBookmarks([]);
+        setFilteredMovies([]);
+      }
       loadBookmarkedMovies();
     });
 
