@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import MapView from "react-native-maps";
 import { StyleSheet, View } from "react-native";
 import { colors } from "../styles/globalStyles";
@@ -22,6 +22,8 @@ const Map = ({ navigation }) => {
       const location = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = location.coords;
 
+      console.log("User location:", { latitude, longitude });
+
       setUserLocation(location.coords);
       setRegion({
         latitude,
@@ -31,6 +33,11 @@ const Map = ({ navigation }) => {
       });
 
       const nearbyCinemas = await fetchNearbyCinemas(latitude, longitude);
+      console.log(
+        "First cinema coordinates:",
+        nearbyCinemas[0]?.geometry.location
+      );
+
       setCinemas(nearbyCinemas);
     } catch (error) {
       console.error("Error getting location:", error);
@@ -46,26 +53,24 @@ const Map = ({ navigation }) => {
   };
 
   if (!region) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return (
     <View style={styles.container}>
       <MapView
         style={styles.map}
-        region={region}
+        initialRegion={region}
         showsUserLocation={true}
         showsMyLocationButton={true}
-        onRegionChangeComplete={setRegion}
       >
-        {cinemas.length > 0 &&
-          cinemas.map((cinema) => (
-            <CinemaMarker
-              key={cinema.place_id}
-              cinema={cinema}
-              onPress={handleCinemaPress}
-            />
-          ))}
+        {cinemas.map((cinema) => (
+          <CinemaMarker
+            key={cinema.place_id}
+            cinema={cinema}
+            onPress={handleCinemaPress}
+          />
+        ))}
       </MapView>
     </View>
   );
