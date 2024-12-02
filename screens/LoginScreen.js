@@ -27,10 +27,42 @@ const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setEmailError("Email is required");
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address");
+      return false;
+    }
+    setEmailError("");
+    return true;
+  };
+
+  const validatePassword = (password) => {
+    if (!password) {
+      setPasswordError("Password is required");
+      return false;
+    }
+    if (password.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+      return false;
+    }
+    setPasswordError("");
+    return true;
+  };
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password);
+
+    if (!isEmailValid || !isPasswordValid) {
       return;
     }
 
@@ -40,21 +72,22 @@ const LoginScreen = ({ navigation }) => {
       const { user, error } = await login(email, password);
 
       if (error) {
-        // Firebase-specific error message
-        Alert.alert("Error", error);
+        Alert.alert("Login Error", error);
       } else if (user) {
         navigation.navigate("Account");
       } else {
-        // Catch any cases where no user or error is returned unexpectedly
         Alert.alert("Error", "An unexpected error occurred");
       }
     } catch (error) {
-      // Log and alert on any unhandled runtime errors
       console.error("Login Process Error:", error);
       Alert.alert("Error", "An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleForgotPassword = () => {
+    navigation.navigate("ForgotPassword");
   };
 
   return (
@@ -68,24 +101,65 @@ const LoginScreen = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={styles.title}>Welcome Back</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          editable={!loading}
-        />
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={[styles.input, emailError && styles.inputError]}
+            placeholder="Email"
+            value={email}
+            onChangeText={(text) => {
+              setEmail(text);
+              validateEmail(text);
+            }}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            editable={!loading}
+          />
+          {emailError ? (
+            <Text style={styles.errorText}>{emailError}</Text>
+          ) : null}
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          editable={!loading}
-        />
+        <View style={styles.inputContainer}>
+          <View
+            style={[
+              styles.passwordContainer,
+              passwordError && styles.inputError,
+            ]}
+          >
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Password"
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                validatePassword(text);
+              }}
+              secureTextEntry={!showPassword}
+              editable={!loading}
+            />
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              <Ionicons
+                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                size={24}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+          </View>
+          {passwordError ? (
+            <Text style={styles.errorText}>{passwordError}</Text>
+          ) : null}
+        </View>
+
+        <TouchableOpacity
+          style={styles.forgotPassword}
+          onPress={handleForgotPassword}
+          disabled={loading}
+        >
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
@@ -161,6 +235,42 @@ const styles = StyleSheet.create({
     left: spacing.lg,
     padding: spacing.sm,
     zIndex: 1,
+  },
+  inputContainer: {
+    marginBottom: spacing.md,
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: 50,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingHorizontal: spacing.md,
+  },
+  passwordInput: {
+    flex: 1,
+    color: colors.text,
+  },
+  eyeIcon: {
+    padding: spacing.xs,
+  },
+  inputError: {
+    borderColor: colors.error,
+  },
+  errorText: {
+    color: colors.error,
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: spacing.xs,
+  },
+  forgotPassword: {
+    alignSelf: "flex-end",
+    marginBottom: spacing.lg,
+  },
+  forgotPasswordText: {
+    color: colors.primary,
+    fontSize: 14,
   },
 });
 
