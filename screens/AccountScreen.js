@@ -148,8 +148,8 @@ const AccountScreen = () => {
             </View>
           )}
           {imageLoading && (
-            <ActivityIndicator 
-              style={StyleSheet.absoluteFill} 
+            <ActivityIndicator
+              style={StyleSheet.absoluteFill}
               color={colors.primary}
             />
           )}

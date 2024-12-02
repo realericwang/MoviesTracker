@@ -17,8 +17,8 @@ import TVShowDetailScreen from "../screens/TVShowDetailScreen";
 import SettingsScreen from "../screens/SettingsScreen";
 import EditProfileScreen from "../screens/EditProfileScreen";
 import CinemaDetailScreen from "../screens/CinemaDetailScreen";
-import AboutScreen from '../screens/AboutScreen';
-import HelpSupportScreen from '../screens/HelpSupportScreen';
+import AboutScreen from "../screens/AboutScreen";
+import HelpSupportScreen from "../screens/HelpSupportScreen";
 /**
  * AppNavigator: Main navigation structure for the application.
  *
@@ -107,21 +107,21 @@ export function AppNavigator() {
           headerBackTitleVisible: false,
         }}
       />
-      <Stack.Screen 
-        name="About" 
+      <Stack.Screen
+        name="About"
         component={AboutScreen}
         options={{
           headerShown: false,
-          presentation: 'modal',
+          presentation: "modal",
           animationEnabled: true,
         }}
       />
-      <Stack.Screen 
-        name="HelpSupport" 
+      <Stack.Screen
+        name="HelpSupport"
         component={HelpSupportScreen}
         options={{
           headerShown: false,
-          presentation: 'modal',
+          presentation: "modal",
           animationEnabled: true,
         }}
       />
