@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { colors, spacing } from "../styles/globalStyles";
 import { login } from "../firebase/authHelper";
+import { Ionicons } from "@expo/vector-icons";
 
 /**
  * LoginScreen component for user authentication.
@@ -59,6 +60,12 @@ const LoginScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.formContainer}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
         <Text style={styles.title}>Welcome Back</Text>
 
         <TextInput
@@ -147,6 +154,13 @@ const styles = StyleSheet.create({
     color: colors.primary,
     textAlign: "center",
     marginTop: spacing.lg,
+  },
+  backButton: {
+    position: "absolute",
+    top: spacing.lg,
+    left: spacing.lg,
+    padding: spacing.sm,
+    zIndex: 1,
   },
 });
 
