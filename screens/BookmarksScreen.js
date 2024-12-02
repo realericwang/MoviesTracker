@@ -63,7 +63,7 @@ export default function BookmarksScreen() {
     try {
       setError(null);
       const [moviesData, tvShowsData] = await Promise.all([
-        fetchBookmarkedMovies(user),
+        getDocsByQueries("bookmarks", [where("userId", "==", user.uid)]),
         getDocsByQueries("tvshowbookmarks", [where("userId", "==", user.uid)]),
       ]);
 
