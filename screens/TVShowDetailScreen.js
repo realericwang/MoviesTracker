@@ -45,13 +45,12 @@ const { width } = Dimensions.get("window");
  * @param {number} route.params.showId - The ID of the TV show to display.
  * @returns {JSX.Element} The TVShowDetailScreen component.
  */
-export default function TVShowDetailScreen({ route }) {
+export default function TVShowDetailScreen({ route, navigation }) {
   const { showId } = route.params;
   const [show, setShow] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarksID, setBookmarksID] = useState(null);
-  const navigation = useNavigation();
   const [reviews, setReviews] = useState([]);
   const [userReview, setUserReview] = useState(null);
   const [reviewText, setReviewText] = useState("");
@@ -393,7 +392,18 @@ export default function TVShowDetailScreen({ route }) {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>TV Show Details</Text>
+        <View style={styles.placeholder} />
+      </View>
+
       <ScrollView style={styles.container}>
         <Image
           source={{ uri: getImageUrl(show.backdrop_path) }}
@@ -1171,5 +1181,26 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.text,
+  },
+  backButton: {
+    padding: spacing.sm,
+  },
+  placeholder: {
+    width: 40, // To maintain center alignment of title
   },
 });
