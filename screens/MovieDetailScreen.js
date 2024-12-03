@@ -390,7 +390,17 @@ export default function MovieDetailScreen({ route }) {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Movie Details</Text>
+        <View style={styles.placeholder} />
+      </View>
       <ScrollView style={styles.container}>
         <Image
           source={{ uri: getImageUrl(movie.backdrop_path) }}
@@ -935,6 +945,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.text,
+  },
+  backButton: {
+    padding: spacing.sm,
+  },
+  placeholder: {
+    width: 40, // To maintain center alignment of title
   },
   backdrop: {
     width: width,

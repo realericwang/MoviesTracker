@@ -13,7 +13,6 @@ export const colors = {
   success: "#10B981",
   dark: "#0F172A",
   white: "#FFFFFF",
-
 };
 
 // Define common spacing
