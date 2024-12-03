@@ -145,7 +145,7 @@ const EditProfileScreen = ({ navigation }) => {
           disabled={loading}
         >
           <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>ƒ
+        </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
