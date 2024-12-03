@@ -1,12 +1,12 @@
-# App Name
+# App Name 📺
 
 MoviesTracker
 
-# Project Group-6
+# Project Group-6 🤙
 
 Yichen Wang && Wangfan Qian
 
-# API (tmdb)
+# API (tmdb) 
 
 **Pleaes find and paste API in the assignment comment in Canvas to your .env file to run.**
   
@@ -85,45 +85,46 @@ Yichen Wang && Wangfan Qian
     }
 
 
-# Iteration 2 Contribution
+# Iteration 3 Contribution
 
-Yichen Wang 👍
+Yichen Wang 👍👍👍
 
-* Developed the camera usage feature for enhanced user interaction.
-* Implemented the notification functionality for timely user reminders.
-* Optimized the MapView UI, improving usability and aesthetics.
-* Finish About and Help& Support function in setting Screen
+* Resolved an issue where the bookmark content remained from the previous account after switching accounts. The bug was due to the system still using the old account information when requesting data from the database.
+* Added a "Back" button on the login and register screens for easier navigation.
+* Implemented a password recovery feature, which sends a password reset email to the user's registered email address.
+* Added a prompt during account registration to encourage users to choose a strong password.
 
-Wangfan Qian 👍
+Wangfan Qian 👍👍👍
+* Fix datepicker functionality on Android and add alerts to ensure users can only select future dates for reminders.
+* Add a back button on the cinema details screen to enhance user experience.
+* Optimize styling.
+* Resolve notification issues on certain devices.
 
-* Implemented the location-based MapView functionality on ios（Ongoing）.
-* Enhanced bookmark features, allowing smoother navigation and user engagement. 
-* Conducted style revisions, improving design consistency and user interface aesthetics.
-* Resolved various minor bugs to enhance application stability and performance.
+# Iteration 3 Update
 
-# Iteration 2 Update
+**Bug Fix** 🥷
+* Resolved issue where bookmark content remained from the previous account after switching accounts.
+* Fixed datepicker functionality on Android to ensure users can only select future dates for reminders.
+* Resolved notification issues on certain devices.
 
-1. **Location Usage:**
-* Leveraged users’ location data to implement a feature that finds nearby movie theaters, providing a personalized and convenient experience.
-
-2. **Notification:**
-* Implemented a Movie Watch Reminder notification feature, allowing users to set reminders for upcoming movies or bookmarked titles.
-
-3. **CameraUse:**
-* implemented a Review Modal that enables users to upload or capture photos directly, allowing them to record and share their movie-watching moments.
+**New Features** ⛄️
+* Added a "Back" button on login and registration screens for easier navigation.
+* Implemented password recovery feature with email reset option.
+* Added prompt during account registration to encourage strong password selection.
+* Added back button on the cinema details screen to enhance user experience.
+* Optimized styling across the app.
 
 
 # Project Overview
 
-MoviesTracker transforms how you experience and share cinematic adventures. More than a movie database, it’s your personalized film companion, offering a rich, immersive way to track and remember each film.
+Experience cinema like never before! Track favorites, write comments, discover new films, and find nearby cinemas on the map. Join a community of movie lovers and enhance your cinematic adventures!
 
 # App Functionality
 
-* **CRUD Operations:** Users can create, read and delete data about their reviews, favorites, and personal info
+* **CRUD Operations:** Users can create, read and delete data about their reviews, favorites, and personal info, and take Pictures.
 * **Movies Recommendation:** Discover popular movies and shows across various categories and genres based on the current trends.
 * **Movies Search:** Search through a vast collection of movies and TV shows to find exactly what you’re looking for.
 * **Favorites & Sorting:** Save your favorite movies for easy access and organize your collection with sorting options.
-* **Footprint Map:** Track your cinematic journey visually by tagging where you watched each movie.
 * **Notifications:** Set reminders for upcoming releases or movies on your watchlist to ensure you never miss a movie.
 * **Location Tagging:** See your moive theaters nearby.
 
@@ -200,9 +201,14 @@ Firebase Storage would primarily be used to store:
 * __Description__: store the profile Pictures
 * __Usage__: When users upload or change their profile picture, the image is stored in this folder under a subfolder named after their userId.
 
-### 2. TV Show Review Images
-* Structure: `tvshow_review_images/${userId}/${imageId}`
-* Description: Stores images uploaded by users as part of their TV show reviews.
+### 2. Review Images
+* Structure: `review_images/${user.uid}/${imageId}`
+* Description: Stores images uploaded by users as part of their reviews.
+* Usage: When users upload images for their movies reviews, the images are stored in this folder under * subfolders named after their userId and imageId.
+
+### 2. TVshow Images
+* Structure: `tvshows_images/${user.uid}/${imageId}`
+* Description: Stores images uploaded by users as part of their reviews.
 * Usage: When users upload images for their TV show reviews, the images are stored in this folder under * subfolders named after their userId and imageId.
 
 # Screenshots
