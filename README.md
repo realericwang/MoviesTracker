@@ -6,6 +6,9 @@ MoviesTracker
 
 Yichen Wang && Wangfan Qian
 
+# Demo Video
+You can watch our demo video on Vimeo: [Demo Video](https://vimeo.com/1035429975) (4 minutes)
+
 # API (tmdb) 
 
 **Pleaes find and paste API in the assignment comment in Canvas to your .env file to run.**
